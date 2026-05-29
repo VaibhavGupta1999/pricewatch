@@ -1,0 +1,287 @@
+{
+  "platforms": [
+    {"id": "amazon", "name": "Amazon", "type": "ecommerce", "logo_url": "https://ui-avatars.com/api/?name=Amazon&background=ff9900&color=fff&rounded=true&bold=true"},
+    {"id": "bigbasket", "name": "BigBasket", "type": "ecommerce", "logo_url": "https://ui-avatars.com/api/?name=BigBasket&background=84c225&color=fff&rounded=true&bold=true"},
+    {"id": "blinkit", "name": "Blinkit", "type": "quick_commerce", "logo_url": "https://ui-avatars.com/api/?name=Blinkit&background=fbd504&color=000&rounded=true&bold=true"},
+    {"id": "zepto", "name": "Zepto", "type": "quick_commerce", "logo_url": "https://ui-avatars.com/api/?name=Zepto&background=5c049c&color=fff&rounded=true&bold=true"},
+    {"id": "instamart", "name": "Swiggy Instamart", "type": "quick_commerce", "logo_url": "https://ui-avatars.com/api/?name=Instamart&background=ff6c04&color=fff&rounded=true&bold=true"}
+  ],
+  "products": [
+    {
+      "id": "p_amul_butter_500", "name": "Amul Pasteurised Butter 500g",
+      "description": "India's favourite butter, rich and creamy.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?w=500&q=80",
+      "tags": "dairy,butter,breakfast,amul", "is_trending": true,
+      "listings": [
+        {"id": "l_ab_amz", "product_id": "p_amul_butter_500", "platform_id": "amazon", "current_price": 280, "original_price": 290, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_ab_bb", "product_id": "p_amul_butter_500", "platform_id": "bigbasket", "current_price": 275, "original_price": 290, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_ab_bl", "product_id": "p_amul_butter_500", "platform_id": "blinkit", "current_price": 290, "original_price": 290, "eta_minutes": 10, "in_stock": true, "stock_count": 5},
+        {"id": "l_ab_zp", "product_id": "p_amul_butter_500", "platform_id": "zepto", "current_price": 285, "original_price": 290, "eta_minutes": 12, "in_stock": true, "stock_count": 8},
+        {"id": "l_ab_im", "product_id": "p_amul_butter_500", "platform_id": "instamart", "current_price": 288, "original_price": 290, "eta_minutes": 15, "in_stock": true, "stock_count": 12}
+      ]
+    },
+    {
+      "id": "p_aashirvaad_atta_5kg", "name": "Aashirvaad Shudh Chakki Atta 5kg",
+      "description": "100% pure whole wheat atta for soft rotis.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&q=80",
+      "tags": "grocery,flour,wheat,staples", "is_trending": false,
+      "listings": [
+        {"id": "l_aa_amz", "product_id": "p_aashirvaad_atta_5kg", "platform_id": "amazon", "current_price": 220, "original_price": 260, "eta_minutes": 4320, "in_stock": true, "stock_count": null},
+        {"id": "l_aa_bb", "product_id": "p_aashirvaad_atta_5kg", "platform_id": "bigbasket", "current_price": 235, "original_price": 260, "eta_minutes": 1440, "in_stock": true, "stock_count": null},
+        {"id": "l_aa_bl", "product_id": "p_aashirvaad_atta_5kg", "platform_id": "blinkit", "current_price": 260, "original_price": 260, "eta_minutes": 15, "in_stock": true, "stock_count": 3},
+        {"id": "l_aa_zp", "product_id": "p_aashirvaad_atta_5kg", "platform_id": "zepto", "current_price": 255, "original_price": 260, "eta_minutes": 18, "in_stock": true, "stock_count": 2}
+      ]
+    },
+    {
+      "id": "p_tata_salt_1kg", "name": "Tata Salt 1kg",
+      "description": "Vacuum evaporated iodised salt.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1629853381665-274e1e360f0f?w=500&q=80",
+      "tags": "grocery,salt,staples,tata", "is_trending": false,
+      "listings": [
+        {"id": "l_ts_amz", "product_id": "p_tata_salt_1kg", "platform_id": "amazon", "current_price": 24, "original_price": 28, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_ts_bb", "product_id": "p_tata_salt_1kg", "platform_id": "bigbasket", "current_price": 25, "original_price": 28, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_ts_bl", "product_id": "p_tata_salt_1kg", "platform_id": "blinkit", "current_price": 28, "original_price": 28, "eta_minutes": 8, "in_stock": true, "stock_count": 30},
+        {"id": "l_ts_zp", "product_id": "p_tata_salt_1kg", "platform_id": "zepto", "current_price": 27, "original_price": 28, "eta_minutes": 10, "in_stock": true, "stock_count": 22},
+        {"id": "l_ts_im", "product_id": "p_tata_salt_1kg", "platform_id": "instamart", "current_price": 26, "original_price": 28, "eta_minutes": 12, "in_stock": true, "stock_count": 18}
+      ]
+    },
+    {
+      "id": "p_fortune_oil_1l", "name": "Fortune Sunflower Oil 1L",
+      "description": "Heart-healthy refined sunflower oil.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&q=80",
+      "tags": "grocery,oil,cooking,fortune", "is_trending": true,
+      "listings": [
+        {"id": "l_fo_amz", "product_id": "p_fortune_oil_1l", "platform_id": "amazon", "current_price": 155, "original_price": 180, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_fo_bb", "product_id": "p_fortune_oil_1l", "platform_id": "bigbasket", "current_price": 160, "original_price": 180, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_fo_bl", "product_id": "p_fortune_oil_1l", "platform_id": "blinkit", "current_price": 175, "original_price": 180, "eta_minutes": 10, "in_stock": true, "stock_count": 7},
+        {"id": "l_fo_zp", "product_id": "p_fortune_oil_1l", "platform_id": "zepto", "current_price": 170, "original_price": 180, "eta_minutes": 12, "in_stock": true, "stock_count": 5},
+        {"id": "l_fo_im", "product_id": "p_fortune_oil_1l", "platform_id": "instamart", "current_price": 168, "original_price": 180, "eta_minutes": 14, "in_stock": true, "stock_count": 9}
+      ]
+    },
+    {
+      "id": "p_maggi_noodles", "name": "Maggi 2-Minute Masala Noodles (Pack of 12)",
+      "description": "India's favourite instant noodles, masala flavour.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=500&q=80",
+      "tags": "noodles,instant,snacks,maggi,nestle", "is_trending": true,
+      "listings": [
+        {"id": "l_mg_amz", "product_id": "p_maggi_noodles", "platform_id": "amazon", "current_price": 144, "original_price": 168, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_mg_bb", "product_id": "p_maggi_noodles", "platform_id": "bigbasket", "current_price": 152, "original_price": 168, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_mg_bl", "product_id": "p_maggi_noodles", "platform_id": "blinkit", "current_price": 164, "original_price": 168, "eta_minutes": 10, "in_stock": true, "stock_count": 15},
+        {"id": "l_mg_zp", "product_id": "p_maggi_noodles", "platform_id": "zepto", "current_price": 160, "original_price": 168, "eta_minutes": 11, "in_stock": true, "stock_count": 10},
+        {"id": "l_mg_im", "product_id": "p_maggi_noodles", "platform_id": "instamart", "current_price": 158, "original_price": 168, "eta_minutes": 13, "in_stock": true, "stock_count": 8}
+      ]
+    },
+    {
+      "id": "p_britannia_bread", "name": "Britannia White Bread 400g",
+      "description": "Soft and fresh white bread.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1598373182133-52452f7691ef?w=500&q=80",
+      "tags": "bread,bakery,breakfast,britannia", "is_trending": false,
+      "listings": [
+        {"id": "l_bb_bb", "product_id": "p_britannia_bread", "platform_id": "bigbasket", "current_price": 45, "original_price": 50, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_bb_bl", "product_id": "p_britannia_bread", "platform_id": "blinkit", "current_price": 50, "original_price": 50, "eta_minutes": 8, "in_stock": true, "stock_count": 12},
+        {"id": "l_bb_zp", "product_id": "p_britannia_bread", "platform_id": "zepto", "current_price": 48, "original_price": 50, "eta_minutes": 9, "in_stock": true, "stock_count": 7},
+        {"id": "l_bb_im", "product_id": "p_britannia_bread", "platform_id": "instamart", "current_price": 49, "original_price": 50, "eta_minutes": 11, "in_stock": true, "stock_count": 6}
+      ]
+    },
+    {
+      "id": "p_parle_g", "name": "Parle-G Gold Biscuits 1kg",
+      "description": "India's iconic glucose biscuit, premium variant.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=500&q=80",
+      "tags": "biscuits,snacks,parle,glucose", "is_trending": false,
+      "listings": [
+        {"id": "l_pg_amz", "product_id": "p_parle_g", "platform_id": "amazon", "current_price": 120, "original_price": 140, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_pg_bb", "product_id": "p_parle_g", "platform_id": "bigbasket", "current_price": 125, "original_price": 140, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_pg_bl", "product_id": "p_parle_g", "platform_id": "blinkit", "current_price": 138, "original_price": 140, "eta_minutes": 10, "in_stock": true, "stock_count": 20},
+        {"id": "l_pg_zp", "product_id": "p_parle_g", "platform_id": "zepto", "current_price": 135, "original_price": 140, "eta_minutes": 12, "in_stock": true, "stock_count": 14}
+      ]
+    },
+    {
+      "id": "p_milk_amul_1l", "name": "Amul Taaza Toned Milk 1L",
+      "description": "Homogenized toned milk, fresh and pasteurised.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&q=80",
+      "tags": "dairy,milk,amul,fresh", "is_trending": false,
+      "listings": [
+        {"id": "l_am_bb", "product_id": "p_milk_amul_1l", "platform_id": "bigbasket", "current_price": 60, "original_price": 66, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_am_bl", "product_id": "p_milk_amul_1l", "platform_id": "blinkit", "current_price": 66, "original_price": 66, "eta_minutes": 8, "in_stock": true, "stock_count": 25},
+        {"id": "l_am_zp", "product_id": "p_milk_amul_1l", "platform_id": "zepto", "current_price": 64, "original_price": 66, "eta_minutes": 10, "in_stock": true, "stock_count": 30},
+        {"id": "l_am_im", "product_id": "p_milk_amul_1l", "platform_id": "instamart", "current_price": 62, "original_price": 66, "eta_minutes": 12, "in_stock": true, "stock_count": 20}
+      ]
+    },
+    {
+      "id": "p_surf_excel", "name": "Surf Excel Easy Wash 1.5kg",
+      "description": "Superior stain removal detergent powder.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1583947581924-860bda6a5a83?w=500&q=80",
+      "tags": "detergent,cleaning,laundry,surf", "is_trending": false,
+      "listings": [
+        {"id": "l_se_amz", "product_id": "p_surf_excel", "platform_id": "amazon", "current_price": 180, "original_price": 210, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_se_bb", "product_id": "p_surf_excel", "platform_id": "bigbasket", "current_price": 195, "original_price": 210, "eta_minutes": 1440, "in_stock": true, "stock_count": null},
+        {"id": "l_se_bl", "product_id": "p_surf_excel", "platform_id": "blinkit", "current_price": 210, "original_price": 210, "eta_minutes": 12, "in_stock": true, "stock_count": 6},
+        {"id": "l_se_zp", "product_id": "p_surf_excel", "platform_id": "zepto", "current_price": 205, "original_price": 210, "eta_minutes": 15, "in_stock": true, "stock_count": 4}
+      ]
+    },
+    {
+      "id": "p_oreo_cookies", "name": "Oreo Original Cream Biscuits 300g",
+      "description": "Chocolatey sandwich cookies with vanilla cream.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=500&q=80",
+      "tags": "biscuits,cookies,snacks,oreo,chocolate", "is_trending": true,
+      "listings": [
+        {"id": "l_oc_amz", "product_id": "p_oreo_cookies", "platform_id": "amazon", "current_price": 30, "original_price": 40, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_oc_bb", "product_id": "p_oreo_cookies", "platform_id": "bigbasket", "current_price": 35, "original_price": 40, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_oc_bl", "product_id": "p_oreo_cookies", "platform_id": "blinkit", "current_price": 38, "original_price": 40, "eta_minutes": 8, "in_stock": true, "stock_count": 30},
+        {"id": "l_oc_zp", "product_id": "p_oreo_cookies", "platform_id": "zepto", "current_price": 36, "original_price": 40, "eta_minutes": 10, "in_stock": true, "stock_count": 25},
+        {"id": "l_oc_im", "product_id": "p_oreo_cookies", "platform_id": "instamart", "current_price": 37, "original_price": 40, "eta_minutes": 11, "in_stock": true, "stock_count": 18}
+      ]
+    },
+    {
+      "id": "p_sugar_1kg", "name": "India Gate Sugar 1kg",
+      "description": "Pure refined sugar crystals.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1622484211148-71329c21eb6b?w=500&q=80",
+      "tags": "grocery,sugar,staples", "is_trending": false,
+      "listings": [
+        {"id": "l_sg_amz", "product_id": "p_sugar_1kg", "platform_id": "amazon", "current_price": 42, "original_price": 48, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_sg_bb", "product_id": "p_sugar_1kg", "platform_id": "bigbasket", "current_price": 44, "original_price": 48, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_sg_bl", "product_id": "p_sugar_1kg", "platform_id": "blinkit", "current_price": 47, "original_price": 48, "eta_minutes": 10, "in_stock": true, "stock_count": 18},
+        {"id": "l_sg_zp", "product_id": "p_sugar_1kg", "platform_id": "zepto", "current_price": 46, "original_price": 48, "eta_minutes": 12, "in_stock": true, "stock_count": 12}
+      ]
+    },
+    {
+      "id": "p_tea_tata_500g", "name": "Tata Tea Premium 500g",
+      "description": "India's No.1 tea brand, strong and flavorful.",
+      "category": "C", "image_url": "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=500&q=80",
+      "tags": "tea,beverages,tata,breakfast", "is_trending": false,
+      "listings": [
+        {"id": "l_tt_amz", "product_id": "p_tea_tata_500g", "platform_id": "amazon", "current_price": 225, "original_price": 260, "eta_minutes": 2880, "in_stock": true, "stock_count": null},
+        {"id": "l_tt_bb", "product_id": "p_tea_tata_500g", "platform_id": "bigbasket", "current_price": 240, "original_price": 260, "eta_minutes": 720, "in_stock": true, "stock_count": null},
+        {"id": "l_tt_bl", "product_id": "p_tea_tata_500g", "platform_id": "blinkit", "current_price": 255, "original_price": 260, "eta_minutes": 12, "in_stock": true, "stock_count": 5},
+        {"id": "l_tt_zp", "product_id": "p_tea_tata_500g", "platform_id": "zepto", "current_price": 250, "original_price": 260, "eta_minutes": 14, "in_stock": true, "stock_count": 7},
+        {"id": "l_tt_im", "product_id": "p_tea_tata_500g", "platform_id": "instamart", "current_price": 248, "original_price": 260, "eta_minutes": 15, "in_stock": true, "stock_count": 4}
+      ]
+    },
+    {
+      "id": "p_coriander_leaves", "name": "Fresh Coriander Leaves 100g",
+      "description": "Farm fresh coriander leaves, hand-picked.",
+      "category": "B", "image_url": "https://images.unsplash.com/photo-1558222629-8739ed1fb2b7?w=500&q=80",
+      "tags": "fresh,vegetables,herbs,coriander", "is_trending": false,
+      "listings": [
+        {"id": "l_cl_bl", "product_id": "p_coriander_leaves", "platform_id": "blinkit", "current_price": 15, "original_price": 20, "eta_minutes": 8, "in_stock": true, "stock_count": 25},
+        {"id": "l_cl_zp", "product_id": "p_coriander_leaves", "platform_id": "zepto", "current_price": 12, "original_price": 25, "eta_minutes": 11, "in_stock": true, "stock_count": 40},
+        {"id": "l_cl_im", "product_id": "p_coriander_leaves", "platform_id": "instamart", "current_price": 18, "original_price": 20, "eta_minutes": 14, "in_stock": true, "stock_count": 15}
+      ]
+    },
+    {
+      "id": "p_onion_1kg", "name": "Fresh Onion 1kg",
+      "description": "Premium quality red onions.",
+      "category": "B", "image_url": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500&q=80",
+      "tags": "fresh,vegetables,onion", "is_trending": true,
+      "listings": [
+        {"id": "l_on_bl", "product_id": "p_onion_1kg", "platform_id": "blinkit", "current_price": 35, "original_price": 45, "eta_minutes": 10, "in_stock": true, "stock_count": 50},
+        {"id": "l_on_zp", "product_id": "p_onion_1kg", "platform_id": "zepto", "current_price": 38, "original_price": 45, "eta_minutes": 12, "in_stock": true, "stock_count": 35},
+        {"id": "l_on_im", "product_id": "p_onion_1kg", "platform_id": "instamart", "current_price": 32, "original_price": 45, "eta_minutes": 14, "in_stock": true, "stock_count": 28},
+        {"id": "l_on_bb", "product_id": "p_onion_1kg", "platform_id": "bigbasket", "current_price": 30, "original_price": 45, "eta_minutes": 720, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_potato_1kg", "name": "Fresh Potato 1kg",
+      "description": "Premium quality potatoes for daily cooking.",
+      "category": "B", "image_url": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500&q=80",
+      "tags": "fresh,vegetables,potato", "is_trending": false,
+      "listings": [
+        {"id": "l_pt_bl", "product_id": "p_potato_1kg", "platform_id": "blinkit", "current_price": 28, "original_price": 35, "eta_minutes": 10, "in_stock": true, "stock_count": 60},
+        {"id": "l_pt_zp", "product_id": "p_potato_1kg", "platform_id": "zepto", "current_price": 30, "original_price": 35, "eta_minutes": 11, "in_stock": true, "stock_count": 45},
+        {"id": "l_pt_im", "product_id": "p_potato_1kg", "platform_id": "instamart", "current_price": 26, "original_price": 35, "eta_minutes": 13, "in_stock": true, "stock_count": 38}
+      ]
+    },
+    {
+      "id": "p_tomato_1kg", "name": "Fresh Tomato 1kg",
+      "description": "Firm, ripe tomatoes for curries and salads.",
+      "category": "B", "image_url": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500&q=80",
+      "tags": "fresh,vegetables,tomato", "is_trending": true,
+      "listings": [
+        {"id": "l_tm_bl", "product_id": "p_tomato_1kg", "platform_id": "blinkit", "current_price": 40, "original_price": 50, "eta_minutes": 8, "in_stock": true, "stock_count": 40},
+        {"id": "l_tm_zp", "product_id": "p_tomato_1kg", "platform_id": "zepto", "current_price": 42, "original_price": 50, "eta_minutes": 10, "in_stock": true, "stock_count": 30},
+        {"id": "l_tm_im", "product_id": "p_tomato_1kg", "platform_id": "instamart", "current_price": 38, "original_price": 50, "eta_minutes": 12, "in_stock": true, "stock_count": 25},
+        {"id": "l_tm_bb", "product_id": "p_tomato_1kg", "platform_id": "bigbasket", "current_price": 35, "original_price": 50, "eta_minutes": 720, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_banana_dozen", "name": "Fresh Banana (Dozen)",
+      "description": "Sweet, ripe bananas, perfect as a healthy snack.",
+      "category": "B", "image_url": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=500&q=80",
+      "tags": "fresh,fruits,banana", "is_trending": false,
+      "listings": [
+        {"id": "l_bn_bl", "product_id": "p_banana_dozen", "platform_id": "blinkit", "current_price": 45, "original_price": 55, "eta_minutes": 10, "in_stock": true, "stock_count": 20},
+        {"id": "l_bn_zp", "product_id": "p_banana_dozen", "platform_id": "zepto", "current_price": 48, "original_price": 55, "eta_minutes": 12, "in_stock": true, "stock_count": 15},
+        {"id": "l_bn_im", "product_id": "p_banana_dozen", "platform_id": "instamart", "current_price": 42, "original_price": 55, "eta_minutes": 14, "in_stock": true, "stock_count": 18}
+      ]
+    },
+    {
+      "id": "p_eggs_12", "name": "Farm Fresh Eggs (Pack of 12)",
+      "description": "White-shelled farm fresh eggs.",
+      "category": "B", "image_url": "https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=500&q=80",
+      "tags": "fresh,eggs,protein,breakfast", "is_trending": false,
+      "listings": [
+        {"id": "l_eg_bl", "product_id": "p_eggs_12", "platform_id": "blinkit", "current_price": 84, "original_price": 96, "eta_minutes": 10, "in_stock": true, "stock_count": 25},
+        {"id": "l_eg_zp", "product_id": "p_eggs_12", "platform_id": "zepto", "current_price": 80, "original_price": 96, "eta_minutes": 11, "in_stock": true, "stock_count": 20},
+        {"id": "l_eg_im", "product_id": "p_eggs_12", "platform_id": "instamart", "current_price": 82, "original_price": 96, "eta_minutes": 13, "in_stock": true, "stock_count": 18},
+        {"id": "l_eg_bb", "product_id": "p_eggs_12", "platform_id": "bigbasket", "current_price": 78, "original_price": 96, "eta_minutes": 720, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_paneer_200g", "name": "Fresh Paneer 200g",
+      "description": "Soft and fresh cottage cheese, ideal for curries.",
+      "category": "B", "image_url": "https://images.unsplash.com/photo-1631452180519-c014fe946bc0?w=500&q=80",
+      "tags": "dairy,paneer,fresh,protein", "is_trending": true,
+      "listings": [
+        {"id": "l_pn_bl", "product_id": "p_paneer_200g", "platform_id": "blinkit", "current_price": 90, "original_price": 100, "eta_minutes": 8, "in_stock": true, "stock_count": 10},
+        {"id": "l_pn_zp", "product_id": "p_paneer_200g", "platform_id": "zepto", "current_price": 85, "original_price": 100, "eta_minutes": 10, "in_stock": true, "stock_count": 8},
+        {"id": "l_pn_im", "product_id": "p_paneer_200g", "platform_id": "instamart", "current_price": 88, "original_price": 100, "eta_minutes": 12, "in_stock": true, "stock_count": 6},
+        {"id": "l_pn_bb", "product_id": "p_paneer_200g", "platform_id": "bigbasket", "current_price": 80, "original_price": 100, "eta_minutes": 720, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_iphone_15", "name": "Apple iPhone 15 (128 GB)",
+      "description": "Dynamic Island. 48MP Main camera. USB-C. A16 Bionic.",
+      "category": "A", "image_url": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=80",
+      "tags": "electronics,smartphone,apple,iphone", "is_trending": true,
+      "listings": [
+        {"id": "l_ip_amz", "product_id": "p_iphone_15", "platform_id": "amazon", "current_price": 65999, "original_price": 79900, "eta_minutes": 2880, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_samsung_s24", "name": "Samsung Galaxy S24 Ultra 256GB",
+      "description": "Galaxy AI. 200MP camera. Titanium frame. S Pen.",
+      "category": "A", "image_url": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80",
+      "tags": "electronics,smartphone,samsung,galaxy", "is_trending": true,
+      "listings": [
+        {"id": "l_ss_amz", "product_id": "p_samsung_s24", "platform_id": "amazon", "current_price": 129999, "original_price": 144999, "eta_minutes": 2880, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_oneplus_buds", "name": "OnePlus Buds Pro 2",
+      "description": "Adaptive noise cancellation, 48-hour battery life.",
+      "category": "A", "image_url": "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=500&q=80",
+      "tags": "electronics,earbuds,oneplus,audio", "is_trending": false,
+      "listings": [
+        {"id": "l_ob_amz", "product_id": "p_oneplus_buds", "platform_id": "amazon", "current_price": 8999, "original_price": 11999, "eta_minutes": 2880, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_macbook_air_m3", "name": "Apple MacBook Air M3 (8GB/256GB)",
+      "description": "Supercharged by M3 chip. 18-hour battery. Fanless design.",
+      "category": "A", "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80",
+      "tags": "electronics,laptop,apple,macbook", "is_trending": true,
+      "listings": [
+        {"id": "l_mb_amz", "product_id": "p_macbook_air_m3", "platform_id": "amazon", "current_price": 104900, "original_price": 114900, "eta_minutes": 4320, "in_stock": true, "stock_count": null}
+      ]
+    },
+    {
+      "id": "p_fire_tv_stick", "name": "Amazon Fire TV Stick 4K Max",
+      "description": "Streaming media player with Alexa Voice Remote.",
+      "category": "A", "image_url": "https://images.unsplash.com/photo-1542282088-fe8426682b8f?w=500&q=80",
+      "tags": "electronics,streaming,amazon,tv", "is_trending": false,
+      "listings": [
+        {"id": "l_ft_amz", "product_id": "p_fire_tv_stick", "platform_id": "amazon", "current_price": 4499, "original_price": 6999, "eta_minutes": 2880, "in_stock": true, "stock_count": null}
+      ]
+    }
+  ]
+}

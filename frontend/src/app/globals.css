@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--color-card);
+  --color-card-foreground: var(--color-card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  --color-price-drop: var(--price-drop);
+  --color-trending: var(--trending);
+  --color-activity: var(--activity);
+  --color-insight: var(--insight);
+  --color-alert: var(--alert);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-ticker: ticker 50s linear infinite;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+}
+
+@layer base {
+  :root {
+    /* Pure Minimal Obsidian / Graphite Palette */
+    --background: #060608; /* Luxury dark */
+    --foreground: #f4f4f5; /* Zinc 100 */
+    
+    --card: #0b0b0d; /* Crisp dark card surface */
+    --card-foreground: #f4f4f5;
+    
+    --popover: #060608;
+    --popover-foreground: #f4f4f5;
+    
+    --primary: #ffffff;
+    --primary-foreground: #09090b;
+    
+    --secondary: #18181b; /* Zinc 900 */
+    --secondary-foreground: #f4f4f5;
+    
+    --muted: #18181b;
+    --muted-foreground: #8e8e93; /* Subtle text */
+    
+    --accent: #18181b;
+    --accent-foreground: #f4f4f5;
+    
+    --destructive: #450a0a;
+    --destructive-foreground: #fafafa;
+    
+    --border: #141416; /* Clean thin border lines */
+    --input: #0f0f11;
+    --ring: #a1a1aa;
+    
+    /* Muted Tasteful Semantic Accents */
+    --price-drop: #10b981; /* Clean Emerald */
+    --trending: #f59e0b; /* Soft Amber */
+    --activity: #3b82f6; /* Calming Royal Blue */
+    --insight: #6366f1; /* Premium Indigo */
+    --alert: #ef4444; /* Alert Crimson */
+    
+    --radius: 0.5rem; /* Clean professional radius */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-zinc-900;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-price-drop/20;
+    /* Soft, calm radial background lighting */
+    background: radial-gradient(circle at 50% 0%, #111115 0%, #060608 80%);
+    background-attachment: fixed;
+  }
+}
+
+/* Premium slim sleek scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1c1c1f;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #27272a;
+}
+
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PriceWatch — Architecture Blueprint v2.0</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+/* ═══ THEME TOKENS ═══ */
+:root {
+  --sidebar-w: 278px;
+  /* accent always same */
+  --accent:  #2563eb;
+  --accent2: #0ea5e9;
+  --accent3: #10b981;
+  --accent4: #f59e0b;
+  --accent5: #ef4444;
+}
+
+[data-theme="dark"] {
+  --bg:       #0b0f1a;
+  --surface:  #111827;
+  --surface2: #1a2235;
+  --border:   #1e2d47;
+  --text:     #e2e8f0;
+  --text2:    #94a3b8;
+  --text3:    #64748b;
+  --hover-row: rgba(30,45,71,0.5);
+  --code-bg:  rgba(30,45,71,0.8);
+  --hero-from:#0f1f3d;
+  --hero-to:  #091222;
+  --step-dot-bg: #0b0f1a;
+  --alert-strong: #fff;
+}
+[data-theme="light"] {
+  --bg:       #f1f5f9;
+  --surface:  #ffffff;
+  --surface2: #f8fafc;
+  --border:   #e2e8f0;
+  --text:     #0f172a;
+  --text2:    #475569;
+  --text3:    #94a3b8;
+  --hover-row: rgba(226,232,240,0.6);
+  --code-bg:  #f1f5f9;
+  --hero-from:#dbeafe;
+  --hero-to:  #eff6ff;
+  --step-dot-bg: #f1f5f9;
+  --alert-strong: #0f172a;
+}
+
+/* ═══ RESET ═══ */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;line-height:1.6;transition:background .2s,color .2s;}
+
+/* ═══ SIDEBAR ═══ */
+#sidebar{width:var(--sidebar-w);height:100vh;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100;overflow-y:scroll;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent;transition:background .2s,border-color .2s;}
+#sidebar::-webkit-scrollbar{width:5px;}
+#sidebar::-webkit-scrollbar-track{background:transparent;}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+#sidebar::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sidebar-logo h1{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2);}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px;}
+.sidebar-section{padding:14px 12px 6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);flex-shrink:0;}
+.nav-item{display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:12.5px;border-left:2px solid transparent;transition:all .15s;cursor:pointer;flex-shrink:0;}
+.nav-item:hover,.nav-item.active{color:var(--accent2);border-left-color:var(--accent2);background:rgba(14,165,233,0.07);}
+.sidebar-footer{padding:16px 18px;margin-top:0;border-top:1px solid var(--border);flex-shrink:0;}
+
+
+/* ═══ GLOBAL FOCUS TICKER ═══ */
+#global-ticker{position:fixed;top:0;left:var(--sidebar-w);right:0;height:36px;background:var(--surface);border-bottom:1px solid var(--border);z-index:90;display:flex;align-items:center;overflow:hidden;}
+.ticker-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);padding:0 14px;white-space:nowrap;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ticker-dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:blink 1.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.ticker-scroll{display:flex;gap:0;white-space:nowrap;animation:tickerMove 28s linear infinite;}
+.ticker-scroll:hover{animation-play-state:paused;}
+.ticker-item{padding:0 20px;font-size:11.5px;font-weight:500;color:var(--text2);border-right:1px solid var(--border);display:flex;align-items:center;gap:8px;height:36px;}
+.ticker-item .t-rank{font-size:10px;color:var(--text3);}
+.ticker-item .t-name{color:var(--text);}
+.ticker-item .t-price{color:var(--accent3);font-weight:700;}
+.ticker-item .t-chg.up{color:#ef4444;font-size:10px;}
+.ticker-item .t-chg.dn{color:#10b981;font-size:10px;}
+@keyframes tickerMove{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* ═══ MAIN ═══ */
+#main{margin-left:var(--sidebar-w);margin-top:36px;flex:1;max-width:980px;padding:36px 48px;}
+
+/* ═══ HERO ═══ */
+.hero{background:linear-gradient(135deg,var(--hero-from) 0%,var(--hero-to) 100%);border:1px solid var(--border);border-radius:12px;padding:32px 38px;margin-bottom:40px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(37,99,235,.14) 0%,transparent 70%);pointer-events:none;}
+.hero-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2);margin-bottom:10px;}
+.hero h2{font-size:26px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:10px;}
+.hero p{color:var(--text2);font-size:14px;max-width:560px;}
+.hero-meta{display:flex;gap:18px;margin-top:18px;flex-wrap:wrap;}
+.hero-meta-item{font-size:11px;color:var(--text3);}
+.hero-meta-item span{color:var(--text2);font-weight:600;}
+
+/* version badge */
+.vbadge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(37,99,235,.15);color:var(--accent2);border:1px solid rgba(37,99,235,.3);margin-left:8px;}
+
+/* ═══ SECTIONS ═══ */
+.section{margin-bottom:52px;scroll-margin-top:60px;}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.section-num{width:28px;height:28px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.section-num.green{background:#065f46;color:var(--accent3);}
+.section-num.amber{background:#78350f;color:var(--accent4);}
+.section-num.red{background:#7f1d1d;color:var(--accent5);}
+.section-num.purple{background:#3b0764;color:#c084fc;}
+.section-num.teal{background:#134e4a;color:#2dd4bf;}
+.section-num.indigo{background:#1e1b4b;color:#818cf8;}
+.section-header h2{font-size:18px;font-weight:700;color:var(--text);}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:16px;}
+.card h3{font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:8px;}
+.card p{color:var(--text2);font-size:13px;line-height:1.65;}
+
+/* ═══ GRIDS ═══ */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* ═══ BADGE ═══ */
+.badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-left:4px;vertical-align:middle;}
+.badge-blue{background:rgba(37,99,235,.2);color:var(--accent2);}
+.badge-green{background:rgba(16,185,129,.18);color:var(--accent3);}
+.badge-amber{background:rgba(245,158,11,.18);color:var(--accent4);}
+.badge-red{background:rgba(239,68,68,.18);color:var(--accent5);}
+.badge-purple{background:rgba(139,92,246,.18);color:#c084fc;}
+.badge-teal{background:rgba(20,184,166,.18);color:#2dd4bf;}
+
+/* ═══ TABLES ═══ */
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--surface2);color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--hover-row);}
+tbody td{padding:10px 14px;color:var(--text);vertical-align:top;}
+tbody td.muted{color:var(--text2);font-size:12px;}
+tbody td.code{font-family:'Fira Code',monospace;font-size:12px;color:#7dd3fc;}
+
+/* ═══ DIAGRAMS ═══ */
+.diagram-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:16px;overflow-x:auto;}
+.diagram-caption{text-align:center;font-size:11px;color:var(--text3);margin-top:12px;}
+
+/* ═══ FLOW STEPS ═══ */
+.flow-steps{display:flex;flex-direction:column;}
+.flow-step{display:flex;gap:16px;position:relative;}
+.flow-step:not(:last-child) .step-line::after{content:'';position:absolute;left:13px;top:28px;width:2px;height:calc(100% + 2px);background:var(--border);}
+.step-line{position:relative;flex-shrink:0;padding-top:4px;}
+.step-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);background:var(--step-dot-bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent2);position:relative;z-index:1;}
+.step-body{padding:0 0 24px;flex:1;}
+.step-body h4{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.step-body p{font-size:12.5px;color:var(--text2);line-height:1.6;}
+
+/* ═══ PILLS ═══ */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid;}
+.pill-blue{background:rgba(37,99,235,.1);border-color:rgba(37,99,235,.35);color:#93c5fd;}
+.pill-green{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.35);color:#6ee7b7;}
+.pill-amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35);color:#fcd34d;}
+.pill-red{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35);color:#fca5a5;}
+.pill-purple{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.35);color:#c4b5fd;}
+.pill-teal{background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.35);color:#5eead4;}
+
+/* ═══ ALERTS ═══ */
+.alert{border-radius:8px;padding:12px 16px;font-size:13px;margin-bottom:12px;border-left:3px solid;line-height:1.6;}
+.alert-blue{background:rgba(37,99,235,.08);border-color:var(--accent);color:var(--text2);}
+.alert-amber{background:rgba(245,158,11,.08);border-color:var(--accent4);color:var(--text2);}
+.alert-green{background:rgba(16,185,129,.08);border-color:var(--accent3);color:var(--text2);}
+.alert-red{background:rgba(239,68,68,.08);border-color:var(--accent5);color:var(--text2);}
+.alert strong{color:var(--alert-strong);}
+
+/* ═══ COLLAPSIBLE ═══ */
+details{margin-bottom:10px;}
+details>summary{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);list-style:none;display:flex;align-items:center;gap:8px;user-select:none;transition:background .1s;}
+details>summary:hover{color:var(--text);}
+details>summary::before{content:'▶';font-size:9px;color:var(--text3);transition:transform .15s;}
+details[open]>summary::before{transform:rotate(90deg);}
+details>.detail-body{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:16px 20px;}
+
+/* ═══ PRICE TABLE ═══ */
+.price-demo{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.price-demo-header{background:var(--surface2);padding:12px 20px;font-size:12px;font-weight:600;color:var(--text2);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.price-demo table{margin:0;}
+.price-lowest{color:var(--accent3);font-weight:700;}
+.price-na{color:var(--text3);}
+.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+.dot-green{background:var(--accent3);}
+.dot-amber{background:var(--accent4);}
+.dot-red{background:var(--accent5);}
+
+/* ═══ COMMODITY CATEGORY TABS ═══ */
+.cat-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:18px;}
+.cat-tab{flex:1;padding:10px 14px;text-align:center;cursor:pointer;font-size:12.5px;font-weight:600;border-right:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:all .15s;user-select:none;}
+.cat-tab:last-child{border-right:none;}
+.cat-tab.active-ecom{background:rgba(37,99,235,.15);color:var(--accent2);}
+.cat-tab.active-qcom{background:rgba(16,185,129,.15);color:var(--accent3);}
+.cat-tab.active-both{background:rgba(245,158,11,.15);color:var(--accent4);}
+.cat-panel{display:none;}
+.cat-panel.active{display:block;}
+
+/* ═══ TIME COMPARISON (Both panel) ═══ */
+.time-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+.time-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.time-card-header{background:var(--surface2);padding:10px 14px;font-size:12px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.time-sparkline{padding:12px 14px;}
+.spark-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11.5px;}
+.spark-bar-label{width:90px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.spark-bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.spark-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+.spark-bar-val{min-width:42px;text-align:right;font-weight:600;font-size:11.5px;}
+
+/* ═══ VIEW MODE BAR ═══ */
+.view-mode-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px 10px 0 0;border-bottom:none;flex-wrap:wrap;}
+.view-mode-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);white-space:nowrap;}
+.view-mode-select-wrap{position:relative;}
+.view-mode-select{appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 32px 6px 12px;font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;outline:none;transition:border-color .15s,background .2s;}
+.view-mode-select:hover,.view-mode-select:focus{border-color:var(--accent2);}
+.view-mode-select-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);pointer-events:none;}
+.view-mode-hint{font-size:11.5px;color:var(--text3);margin-left:auto;font-style:italic;}
+.view-pane{transition:opacity .2s;}
+.view-pane.hidden{display:none;}
+
+/* ═══ TOP 10 BEEPS SECTION ═══ */
+.beeps-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.beep-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:border-color .15s;}
+.beep-card:hover{border-color:var(--accent2);}
+.beep-rank{width:28px;height:28px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text3);flex-shrink:0;}
+.beep-rank.top3{background:rgba(245,158,11,.15);color:var(--accent4);}
+.beep-info{flex:1;min-width:0;}
+.beep-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.beep-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.beep-price{text-align:right;flex-shrink:0;}
+.beep-best{font-size:13px;font-weight:700;color:var(--accent3);}
+.beep-platform{font-size:10px;color:var(--text3);margin-top:1px;}
+.beep-type{display:inline-block;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;margin-top:3px;}
+.beep-ecom{background:rgba(37,99,235,.15);color:var(--accent2);}
+.beep-qcom{background:rgba(16,185,129,.15);color:var(--accent3);}
+.beep-both{background:rgba(245,158,11,.15);color:var(--accent4);}
+
+/* ═══ API ARCHITECTURE SECTION ═══ */
+.api-arch-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.api-arch-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;}
+.api-arch-card h3{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.api-arch-card p{font-size:12px;color:var(--text2);line-height:1.6;}
+
+/* ═══ INLINE CODE ═══ */
+code{font-family:'Fira Code',monospace;font-size:11.5px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:#7dd3fc;}
+
+hr.divider{border:none;border-top:1px solid var(--border);margin:24px 0;}
+
+/* ═══ TEMPLATE SWITCHER (big cards) ═══ */
+.tpl-switcher{display:flex;gap:8px;margin-top:8px;}
+.tpl-card{flex:1;border-radius:10px;border:2px solid var(--border);padding:10px 8px 8px;cursor:pointer;transition:border-color .18s,transform .12s;user-select:none;background:var(--surface2);}
+.tpl-card:hover{transform:translateY(-1px);}
+.tpl-card.active{border-color:var(--accent2);background:var(--surface);}
+.tpl-preview{border-radius:6px;overflow:hidden;margin-bottom:7px;height:46px;display:flex;flex-direction:column;gap:3px;padding:5px;}
+.tpl-preview-bar{border-radius:3px;height:7px;}
+.tpl-label{font-size:11px;font-weight:700;text-align:center;color:var(--text2);}
+.tpl-card.active .tpl-label{color:var(--accent2);}
+/* dark preview colours (always fixed — not theme-aware) */
+.tpl-dark-preview{background:#111827;}
+.tpl-dark-preview .b1{background:#1e2d47;width:80%;}
+.tpl-dark-preview .b2{background:#1e3a6e;width:55%;}
+.tpl-dark-preview .b3{background:#0f2a1f;width:70%;}
+/* light preview colours */
+.tpl-light-preview{background:#f1f5f9;}
+.tpl-light-preview .b1{background:#cbd5e1;width:80%;}
+.tpl-light-preview .b2{background:#bfdbfe;width:55%;}
+.tpl-light-preview .b3{background:#bbf7d0;width:70%;}
+
+/* ═══ ACCENT SWATCHES ═══ */
+.theme-selector{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.theme-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .1s;}
+.theme-swatch:hover{transform:scale(1.15);}
+.theme-swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--bg);}
+
+/* smooth theme transition */
+body,#sidebar,#main,#global-ticker{transition:background .25s,color .2s,border-color .2s;}
+.card,.tbl-wrap,table,.diagram-wrap,.price-demo,.beep-card,.cat-tabs,.cat-tab,.time-card,.api-arch-card,details>summary,details>.detail-body,.hero{transition:background .25s,border-color .2s,color .2s;}
+
+@media(max-width:900px){.grid-3{grid-template-columns:1fr 1fr;}.two-col,.time-compare-grid,.beeps-grid{grid-template-columns:1fr;}#main{padding:24px 16px;}}
+</style>
+</head>
+<body>
+
+<!-- ═══ GLOBAL FOCUS TICKER (REQ 1) ═══ -->
+<div id="global-ticker">
+  <div class="ticker-label"><span class="ticker-dot"></span> LIVE FOCUS</div>
+  <div style="overflow:hidden;flex:1;">
+    <div class="ticker-scroll" id="ticker-inner">
+      <!-- populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <h1>PriceWatch <span class="vbadge">v2.0</span></h1>
+    <p>Architecture Blueprint</p>
+  </div>
+
+  <div class="sidebar-section">Overview</div>
+  <a class="nav-item active" href="#overview">Product Vision</a>
+  <a class="nav-item" href="#top10">Top 10 Beeps <span class="badge badge-amber">Live</span></a>
+  <a class="nav-item" href="#commodity-types">Commodity Categories</a>
+
+  <div class="sidebar-section">Architecture</div>
+  <a class="nav-item" href="#system-arch">System Architecture</a>
+  <a class="nav-item" href="#api-arch">API Architecture <span class="badge badge-blue">New</span></a>
+  <a class="nav-item" href="#crawler">Crawler Engine</a>
+  <a class="nav-item" href="#crawler-freq">Crawl Frequency Logic <span class="badge badge-green">New</span></a>
+  <a class="nav-item" href="#anti-block">Anti-Block Layer</a>
+  <a class="nav-item" href="#data-pipeline">Data Pipeline</a>
+  <a class="nav-item" href="#api">API Endpoints</a>
+
+  <div class="sidebar-section">Frontend</div>
+  <a class="nav-item" href="#ui-modules">UI Modules</a>
+  <a class="nav-item" href="#price-alert">Price Alerts</a>
+
+  <div class="sidebar-section">Infrastructure</div>
+  <a class="nav-item" href="#infra">Cloud Infra</a>
+  <a class="nav-item" href="#deploy">Deployment</a>
+  <a class="nav-item" href="#legal">Legal & Compliance</a>
+  <a class="nav-item" href="#roadmap">Roadmap</a>
+
+  <div class="sidebar-footer">
+
+    <!-- ── TEMPLATE SWITCHER ── -->
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Template</div>
+    <div class="tpl-switcher">
+      <!-- Dark card -->
+      <div class="tpl-card active" id="tpl-dark" onclick="setTheme('dark')" title="Dark template">
+        <div class="tpl-preview tpl-dark-preview">
+          <div class="tpl-preview-bar b1"></div>
+          <div class="tpl-preview-bar b2"></div>
+          <div class="tpl-preview-bar b3"></div>
+        </div>
+        <div class="tpl-label">🌙 Dark</div>
+      </div>
+      <!-- Light card -->
+      <div class="tpl-card" id="tpl-light" onclick="setTheme('light')" title="Light template">
+        <div class="tpl-preview tpl-light-preview">
+          <div class="tpl-preview-bar b1"></div>
+          <div class="tpl-preview-bar b2"></div>
+          <div class="tpl-preview-bar b3"></div>
+        </div>
+        <div class="tpl-label">☀️ Light</div>
+      </div>
+    </div>
+
+    <!-- ── ACCENT COLOUR ── -->
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;margin-top:16px;">Accent Colour</div>
+    <div class="theme-selector">
+      <div class="theme-swatch active" style="background:#0ea5e9;" title="Sky Blue"  onclick="setAccent(this,'#0ea5e9','#2563eb')"></div>
+      <div class="theme-swatch"        style="background:#10b981;" title="Emerald"   onclick="setAccent(this,'#10b981','#065f46')"></div>
+      <div class="theme-swatch"        style="background:#f59e0b;" title="Amber"     onclick="setAccent(this,'#f59e0b','#92400e')"></div>
+      <div class="theme-swatch"        style="background:#ef4444;" title="Red"       onclick="setAccent(this,'#ef4444','#991b1b')"></div>
+      <div class="theme-swatch"        style="background:#a855f7;" title="Purple"    onclick="setAccent(this,'#a855f7','#6b21a8')"></div>
+      <div class="theme-swatch"        style="background:#f97316;" title="Orange"    onclick="setAccent(this,'#f97316','#9a3412')"></div>
+    </div>
+
+ 
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main id="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Architecture Blueprint v2.0</div>
+    <h2>PriceWatch — Multi-Platform Price Comparator<br><span style="font-size:18px;font-weight:500;color:var(--text2);">E-Commerce + Quick-Commerce · India</span></h2>
+    <p>Real-time price intelligence across Indian e-commerce and quick-commerce platforms. Crawls, normalises, and surfaces the best price with alerts, history, and an embeddable widget. Commodity coverage across three categories — platform-exclusive, QC-exclusive, and cross-listed (with time-to-deliver comparison).</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">Version <span>v2.0</span></div>
+      <div class="hero-meta-item">Status <span>Blueprint</span></div>
+      <div class="hero-meta-item">E-Commerce <span>Amazon.in · BigBasket</span></div>
+      <div class="hero-meta-item">Quick-Commerce <span>Blinkit · Zepto · Swiggy Instamart · Country Delight</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ 1. OVERVIEW ═══ -->
+  <section class="section" id="overview">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Product Vision & Core Use Cases</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card"><h3>🛒 Price Comparison</h3><p>Search any product and see a live price table across all platforms, split by E-Com and Q-Com. One-click redirect to the cheapest source with a delivery-time indicator.</p></div>
+      <div class="card"><h3>🔔 Price Alerts</h3><p>Set a target price per product. System notifies via WhatsApp/email/push when price drops to threshold on any platform. Separate alerts for E-Com vs Q-Com if needed.</p></div>
+      <div class="card"><h3>📈 Price + Time History</h3><p>Price trend charts over 30/90 days. For cross-listed products (Category 3), a parallel track shows delivery time changes alongside price — is faster delivery getting cheaper?</p></div>
+      <div class="card"><h3>🏷️ Category Browse</h3><p>Browse by Dairy, Bakery, Snacks, Household, etc. Each category shows best-price platform and the category's commodity type distribution (E-Com only / QC only / Both).</p></div>
+      <div class="card"><h3>📋 Basket Optimiser</h3><p>Multi-item cart. System computes optimal split across 2–3 platforms minimising total spend + delivery fee. Factors in minimum-order thresholds per platform.</p></div>
+      <div class="card"><h3>🔌 Embed Widget</h3><p>JS snippet for blogs and review sites. Shows live price table per product. Configurable to show E-Com only, Q-Com only, or both. Ad/affiliate revenue model for publishers.</p></div>
+    </div>
+    <div class="alert alert-blue" style="margin-top:16px;">
+      <strong>Two-stream architecture:</strong> The platform is built on a fundamental split between E-Commerce (Amazon.in, BigBasket — broad catalogue, standard delivery) and Quick-Commerce (Blinkit, Zepto, Swiggy Instamart, Country Delight — narrow catalogue, 10–30 min delivery). This split drives commodity categorisation, crawl strategy, and UI design throughout.
+    </div>
+  </section>
+
+  <!-- ═══ 2. TOP 10 BEEPS (REQ 2) ═══ -->
+  <section class="section" id="top10">
+    <div class="section-header">
+      <div class="section-num green">2</div>
+      <h2>Top 10 Beeps — Best Price Signals Today</h2>
+    </div>
+    <div class="alert alert-green">
+      <strong>What is a "Beep"?</strong> A Beep is a best-price signal — a product where today's crawl found a price at or below a tracked threshold. Beeps are ranked by volume of user watchlists × price drop %. The top 10 Beeps scroll in the Global Focus Ticker at the top of every page.
+    </div>
+    <div class="beeps-grid" id="beeps-container">
+      <!-- populated by JS -->
+    </div>
+    <div class="alert alert-blue" style="margin-top:14px;">
+      <strong>Architecture note:</strong> Beeps are computed by the Alert Service after every crawl batch. The top-10 list is materialised into Redis with a 15-minute TTL. The ticker and this section both read from that Redis key — <code>beeps:top10</code> — via the <code>GET /v1/beeps/top10</code> endpoint. No DB hit per page load.
+    </div>
+  </section>
+
+  <!-- ═══ 3. COMMODITY CATEGORIES (REQ 7 & 8) ═══ -->
+  <section class="section" id="commodity-types">
+    <div class="section-header">
+      <div class="section-num amber">3</div>
+      <h2>Commodity Categories — Three-Type Model</h2>
+    </div>
+
+    <div class="alert alert-amber">
+      <strong>Two platform types, three commodity categories:</strong> Delivery time data is captured universally across all categories — the difference is how it is surfaced. In Category A &amp; B, users choose their view via a dropdown (Rate / Time / Both). In Category C (cross-listed), both dimensions are always shown side-by-side by default since the trade-off between price and speed is the whole point.
+    </div>
+
+    <!-- THREE-CATEGORY AT-A-GLANCE CARDS -->
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="card" style="border-top:3px solid var(--accent2);">
+        <h3 style="color:var(--accent2);">🏪 Category A — E-Com Only</h3>
+        <p>Products available <strong>only on Amazon.in or BigBasket</strong>. Typically: bulk packs, electronics accessories, household appliances. User-selectable view: <strong>Rate</strong>, <strong>Time</strong>, or <strong>Both</strong>.</p>
+        <div class="pills" style="margin-top:8px;"><span class="pill pill-blue">Amazon.in</span><span class="pill pill-blue">BigBasket</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);">Crawl: standard HTTP · View: dropdown selectable</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent3);">
+        <h3 style="color:var(--accent3);">⚡ Category B — Quick-Com Only</h3>
+        <p>Products available <strong>only on Blinkit / Zepto / Instamart / Country Delight</strong>. Fresh produce, dairy subscriptions, platform-exclusive SKUs. User-selectable view: <strong>Rate</strong>, <strong>Time</strong>, or <strong>Both</strong>.</p>
+        <div class="pills" style="margin-top:8px;"><span class="pill pill-green">Blinkit</span><span class="pill pill-green">Zepto</span><span class="pill pill-green">Swiggy</span><span class="pill pill-green">Country Delight</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);">Crawl: Playwright SPA · View: dropdown selectable</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--accent4);">
+        <h3 style="color:var(--accent4);">⚖️ Category C — Cross-Listed</h3>
+        <p>Products on <strong>both platform types</strong>. Always shows Rate + Time together — the core value of this category is the price-vs-speed trade-off. View is fixed to <strong>Both</strong> (no dropdown needed).</p>
+        <div class="pills" style="margin-top:8px;"><span class="pill pill-amber">All platforms</span><span class="pill pill-purple">Always: Rate + Time</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);">Fixed view — price + delivery time matrix</div>
+      </div>
+    </div>
+
+    <!-- CATEGORY TABS -->
+    <div class="cat-tabs">
+      <div class="cat-tab active-ecom" id="tab-ecom" onclick="switchCat('ecom')">🏪 E-Com Only (Cat A)</div>
+      <div class="cat-tab" id="tab-qcom" onclick="switchCat('qcom')">⚡ Quick-Com Only (Cat B)</div>
+      <div class="cat-tab" id="tab-both" onclick="switchCat('both')">⚖️ Cross-Listed (Cat C)</div>
+    </div>
+
+    <!-- ── CAT A PANEL ── -->
+    <div class="cat-panel active" id="panel-ecom">
+      <!-- View Mode Dropdown -->
+      <div class="view-mode-bar">
+        <span class="view-mode-label">View mode:</span>
+        <div class="view-mode-select-wrap">
+          <select class="view-mode-select" id="view-ecom" onchange="switchView('ecom', this.value)">
+            <option value="rate">📊 Rate Comparison</option>
+            <option value="time">⏱️ Time Comparison</option>
+            <option value="both">⚡ Both (Rate + Time)</option>
+          </select>
+        </div>
+        <span class="view-mode-hint" id="hint-ecom">Showing price comparison across E-Commerce platforms</span>
+      </div>
+
+      <!-- RATE VIEW -->
+      <div class="view-pane" id="ecom-rate">
+        <div class="price-demo">
+          <div class="price-demo-header">
+            <span>Category A — E-Commerce · Rate Comparison</span>
+            <span><span class="status-dot dot-green"></span> Amazon.in + BigBasket</span>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Amazon.in</th><th>BigBasket</th><th>Best Price</th><th>Savings</th></tr></thead>
+            <tbody>
+              <tr><td class="muted">1</td><td><strong>Aashirvaad Atta 10kg</strong></td><td class="price-lowest">₹ 480</td><td>₹ 495</td><td><span class="badge badge-green">Amazon ₹480</span></td><td class="muted" style="color:#10b981;">Save ₹15</td></tr>
+              <tr><td class="muted">2</td><td><strong>Fortune Sunflower Oil 5L</strong></td><td>₹ 620</td><td class="price-lowest">₹ 598</td><td><span class="badge badge-green">BigBasket ₹598</span></td><td class="muted" style="color:#10b981;">Save ₹22</td></tr>
+              <tr><td class="muted">3</td><td><strong>Anchor Electronics USB Hub</strong></td><td class="price-lowest">₹ 349</td><td class="price-na">—</td><td><span class="badge badge-green">Amazon ₹349</span></td><td class="muted">—</td></tr>
+              <tr><td class="muted">4</td><td><strong>Kent RO Filter 6L</strong></td><td class="price-lowest">₹ 1,299</td><td>₹ 1,340</td><td><span class="badge badge-green">Amazon ₹1299</span></td><td class="muted" style="color:#10b981;">Save ₹41</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TIME VIEW -->
+      <div class="view-pane hidden" id="ecom-time">
+        <div class="price-demo">
+          <div class="price-demo-header">
+            <span>Category A — E-Commerce · Delivery Time Comparison</span>
+            <span><span class="status-dot dot-blue"></span> Estimated delivery windows</span>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Amazon.in</th><th>BigBasket</th><th>Fastest Option</th></tr></thead>
+            <tbody>
+              <tr><td class="muted">1</td><td><strong>Aashirvaad Atta 10kg</strong></td><td class="muted">1–2 days</td><td class="muted" style="color:#10b981;font-weight:700;">Same day</td><td><span class="badge badge-green">BigBasket</span></td></tr>
+              <tr><td class="muted">2</td><td><strong>Fortune Sunflower Oil 5L</strong></td><td class="muted">1–2 days</td><td class="muted" style="color:#10b981;font-weight:700;">Same day</td><td><span class="badge badge-green">BigBasket</span></td></tr>
+              <tr><td class="muted">3</td><td><strong>Anchor Electronics USB Hub</strong></td><td class="muted" style="color:#10b981;font-weight:700;">Next day</td><td class="price-na">—</td><td><span class="badge badge-blue">Amazon only</span></td></tr>
+              <tr><td class="muted">4</td><td><strong>Kent RO Filter 6L</strong></td><td class="muted">1–2 days</td><td class="muted" style="color:#10b981;font-weight:700;">Same day</td><td><span class="badge badge-green">BigBasket</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="time-compare-grid" style="margin-top:14px;">
+          <div class="time-card">
+            <div class="time-card-header"><span>E-Com Delivery Windows</span><span class="badge badge-blue">Time view</span></div>
+            <div class="time-sparkline">
+              <div class="spark-bar-row"><span class="spark-bar-label">BigBasket</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:30%;background:#10b981;"></div></div><span class="spark-bar-val" style="color:#10b981;">Same day</span></div>
+              <div class="spark-bar-row"><span class="spark-bar-label">Amazon Next</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:55%;background:#0ea5e9;"></div></div><span class="spark-bar-val" style="color:#0ea5e9;">Next day</span></div>
+              <div class="spark-bar-row"><span class="spark-bar-label">Amazon Std</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:100%;background:#ef4444;"></div></div><span class="spark-bar-val" style="color:#ef4444;">1–2 days</span></div>
+            </div>
+          </div>
+          <div class="time-card">
+            <div class="time-card-header"><span>Architecture Note</span><span class="badge badge-purple">Design</span></div>
+            <div class="time-sparkline">
+              <div style="font-size:12px;color:var(--text2);line-height:1.7;padding:4px 0;">
+                <strong style="color:var(--text);">delivery_eta_min</strong> field is populated for all platforms, not just QC. For E-Com platforms, the value is converted from days: Same day = 480 min, Next day = 1440 min, 2 days = 2880 min. This enables uniform time sorting across all six platforms.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTH VIEW -->
+      <div class="view-pane hidden" id="ecom-both">
+        <div class="price-demo">
+          <div class="price-demo-header">
+            <span>Category A — E-Commerce · Rate + Time (Both)</span>
+            <span><span class="status-dot dot-amber"></span> Full comparison</span>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Amazon.in</th><th>BB Price</th><th>Amazon ETA</th><th>BB ETA</th><th>Best Price</th><th>Fastest</th></tr></thead>
+            <tbody>
+              <tr><td class="muted">1</td><td><strong>Aashirvaad Atta 10kg</strong></td><td class="price-lowest">₹ 480</td><td>₹ 495</td><td class="muted">1–2 days</td><td class="muted" style="color:#10b981;">Same day</td><td><span class="badge badge-green">Amazon</span></td><td><span class="badge badge-green">BigBasket</span></td></tr>
+              <tr><td class="muted">2</td><td><strong>Fortune Oil 5L</strong></td><td>₹ 620</td><td class="price-lowest">₹ 598</td><td class="muted">1–2 days</td><td class="muted" style="color:#10b981;">Same day</td><td><span class="badge badge-green">BigBasket</span></td><td><span class="badge badge-green">BigBasket</span></td></tr>
+              <tr><td class="muted">3</td><td><strong>USB Hub</strong></td><td class="price-lowest">₹ 349</td><td class="price-na">—</td><td class="muted" style="color:#10b981;">Next day</td><td class="price-na">—</td><td><span class="badge badge-blue">Amazon only</span></td><td><span class="badge badge-blue">Amazon only</span></td></tr>
+              <tr><td class="muted">4</td><td><strong>Kent RO Filter</strong></td><td class="price-lowest">₹ 1,299</td><td>₹ 1,340</td><td class="muted">1–2 days</td><td class="muted" style="color:#10b981;">Same day</td><td><span class="badge badge-green">Amazon</span></td><td><span class="badge badge-green">BigBasket</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="alert alert-blue" style="margin-top:12px;"><strong>Both mode on Cat A:</strong> When cheapest ≠ fastest (rows 1 &amp; 4 above), the UI highlights the split and shows a value score. Users can sort by either axis. This is functionally equivalent to Category C layout but within the E-Commerce track only.</div>
+      </div>
+    </div>
+
+    <!-- ── CAT B PANEL ── -->
+    <div class="cat-panel" id="panel-qcom">
+      <!-- View Mode Dropdown -->
+      <div class="view-mode-bar">
+        <span class="view-mode-label">View mode:</span>
+        <div class="view-mode-select-wrap">
+          <select class="view-mode-select" id="view-qcom" onchange="switchView('qcom', this.value)">
+            <option value="rate">📊 Rate Comparison</option>
+            <option value="time">⏱️ Time Comparison</option>
+            <option value="both">⚡ Both (Rate + Time)</option>
+          </select>
+        </div>
+        <span class="view-mode-hint" id="hint-qcom">Showing price comparison across Quick-Commerce platforms</span>
+      </div>
+
+      <!-- RATE VIEW -->
+      <div class="view-pane" id="qcom-rate">
+        <div class="price-demo">
+          <div class="price-demo-header">
+            <span>Category B — Quick-Commerce · Rate Comparison</span>
+            <span><span class="status-dot dot-green"></span> Blinkit · Zepto · Instamart · CD</span>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Blinkit</th><th>Zepto</th><th>Instamart</th><th>Country Delight</th><th>Best</th></tr></thead>
+          <tbody>
+            <tr><td class="muted">1</td><td><strong>Fresh Cut Papaya 250g</strong></td><td class="price-lowest">₹ 45</td><td>₹ 48</td><td>₹ 50</td><td class="price-na">—</td><td><span class="badge badge-green">Blinkit ₹45</span></td></tr>
+            <tr><td class="muted">2</td><td><strong>Country Delight Milk 1L</strong></td><td class="price-na">—</td><td class="price-na">—</td><td class="price-na">—</td><td class="price-lowest">₹ 60</td><td><span class="badge badge-green">CD ₹60</span></td></tr>
+            <tr><td class="muted">3</td><td><strong>Blinkit Mango Shake 200ml</strong></td><td class="price-lowest">₹ 35</td><td class="price-na">—</td><td class="price-na">—</td><td class="price-na">—</td><td><span class="badge badge-green">Blinkit ₹35</span></td></tr>
+            <tr><td class="muted">4</td><td><strong>Packaged Salad Greens 100g</strong></td><td>₹ 55</td><td class="price-lowest">₹ 49</td><td>₹ 52</td><td class="price-na">—</td><td><span class="badge badge-green">Zepto ₹49</span></td></tr>
+          </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TIME VIEW -->
+      <div class="view-pane hidden" id="qcom-time">
+        <div class="price-demo">
+          <div class="price-demo-header">
+            <span>Category B — Quick-Commerce · Delivery Time Comparison</span>
+            <span><span class="status-dot dot-green"></span> Live ETA from platform</span>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Blinkit ETA</th><th>Zepto ETA</th><th>Instamart ETA</th><th>CD ETA</th><th>Fastest</th></tr></thead>
+            <tbody>
+              <tr><td class="muted">1</td><td><strong>Fresh Cut Papaya 250g</strong></td><td style="color:#10b981;font-weight:700;">12 min</td><td class="muted">15 min</td><td class="muted">18 min</td><td class="price-na">—</td><td><span class="badge badge-green">Blinkit 12m</span></td></tr>
+              <tr><td class="muted">2</td><td><strong>Country Delight Milk 1L</strong></td><td class="price-na">—</td><td class="price-na">—</td><td class="price-na">—</td><td style="color:#10b981;font-weight:700;">Next slot</td><td><span class="badge badge-green">CD only</span></td></tr>
+              <tr><td class="muted">3</td><td><strong>Blinkit Mango Shake 200ml</strong></td><td style="color:#10b981;font-weight:700;">10 min</td><td class="price-na">—</td><td class="price-na">—</td><td class="price-na">—</td><td><span class="badge badge-green">Blinkit only</span></td></tr>
+              <tr><td class="muted">4</td><td><strong>Packaged Salad Greens 100g</strong></td><td class="muted">14 min</td><td style="color:#10b981;font-weight:700;">11 min</td><td class="muted">20 min</td><td class="price-na">—</td><td><span class="badge badge-green">Zepto 11m</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="time-compare-grid" style="margin-top:14px;">
+          <div class="time-card">
+            <div class="time-card-header"><span>QC Delivery Windows — Salad Greens</span><span class="badge badge-green">Time view</span></div>
+            <div class="time-sparkline">
+              <div class="spark-bar-row"><span class="spark-bar-label">Zepto</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:55%;background:#10b981;"></div></div><span class="spark-bar-val" style="color:#10b981;">11 min</span></div>
+              <div class="spark-bar-row"><span class="spark-bar-label">Blinkit</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:70%;background:#0ea5e9;"></div></div><span class="spark-bar-val" style="color:#0ea5e9;">14 min</span></div>
+              <div class="spark-bar-row"><span class="spark-bar-label">Instamart</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:100%;background:#ef4444;"></div></div><span class="spark-bar-val" style="color:#ef4444;">20 min</span></div>
+            </div>
+          </div>
+          <div class="time-card">
+            <div class="time-card-header"><span>Architecture Note</span><span class="badge badge-purple">Design</span></div>
+            <div class="time-sparkline">
+              <div style="font-size:12px;color:var(--text2);line-height:1.7;padding:4px 0;">
+                QC ETAs are scraped live from each app — they reflect real-time dark-store stock and rider availability. The <strong style="color:var(--text);">delivery_eta_min</strong> field updates on every crawl. A product may be cheapest on Zepto but fastest on Blinkit — the time view surfaces this clearly.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTH VIEW -->
+      <div class="view-pane hidden" id="qcom-both">
+        <div class="price-demo">
+          <div class="price-demo-header">
+            <span>Category B — Quick-Commerce · Rate + Time (Both)</span>
+            <span><span class="status-dot dot-amber"></span> Full comparison</span>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Blinkit</th><th>Zepto</th><th>Instamart</th><th>Blinkit ETA</th><th>Zepto ETA</th><th>Fastest Cheap</th></tr></thead>
+            <tbody>
+              <tr><td class="muted">1</td><td><strong>Fresh Cut Papaya 250g</strong></td><td class="price-lowest">₹ 45</td><td>₹ 48</td><td>₹ 50</td><td style="color:#10b981;font-weight:700;">12 min</td><td class="muted">15 min</td><td><span class="badge badge-green">Blinkit — Best overall</span></td></tr>
+              <tr><td class="muted">4</td><td><strong>Packaged Salad Greens 100g</strong></td><td>₹ 55</td><td class="price-lowest">₹ 49</td><td>₹ 52</td><td class="muted">14 min</td><td style="color:#10b981;font-weight:700;">11 min</td><td><span class="badge badge-green">Zepto — Best overall</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="alert alert-green" style="margin-top:12px;"><strong>Both mode on Cat B:</strong> On Quick-Commerce, cheapest and fastest often coincide (strong positive correlation — same platform usually wins both). When they diverge, the UI shows a split-recommendation card: "Pay ₹6 more on Blinkit to save 4 minutes." The value score uses a configurable formula: <code>score = price_rank × 0.6 + eta_rank × 0.4</code> (weights user-adjustable).</div>
+      </div>
+    </div>
+
+    <!-- ── CAT C PANEL — Cross-Listed, always Both ── -->
+    <div class="cat-panel" id="panel-both">
+      <div class="view-mode-bar" style="background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.25);">
+        <span class="view-mode-label" style="color:var(--accent4);">View mode:</span>
+        <div class="view-mode-select-wrap">
+          <select class="view-mode-select" disabled style="opacity:0.6;cursor:not-allowed;">
+            <option>⚡ Both (Rate + Time) — always on</option>
+          </select>
+        </div>
+        <span class="view-mode-hint" style="color:var(--accent4);">Category C always shows price + delivery time — the cross-platform trade-off is the core value</span>
+      </div>
+
+      <div class="price-demo">
+        <div class="price-demo-header">
+          <span>Category C — Cross-Listed · Price + Delivery Time Matrix</span>
+          <span><span class="status-dot dot-amber"></span> All 6 platforms</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Platform</th><th>Type</th><th>Price</th><th>Delivery</th><th>Value Score</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3"><strong>Amul Butter 500g</strong></td><td>Amazon.in</td><td><span class="badge badge-blue">E-Com</span></td><td class="price-lowest">₹ 245</td><td class="muted">1–2 days</td><td><span class="badge badge-blue">Cheapest</span></td></tr>
+            <tr><td>Blinkit</td><td><span class="badge badge-green">Q-Com</span></td><td>₹ 260</td><td class="muted">12 min</td><td><span class="badge badge-green">Fastest</span></td></tr>
+            <tr><td>BigBasket</td><td><span class="badge badge-blue">E-Com</span></td><td>₹ 255</td><td class="muted">Same day</td><td><span class="badge badge-amber">Balanced</span></td></tr>
+            <tr style="border-top:2px solid var(--border);"><td rowspan="2"><strong>Britannia Bread 400g</strong></td><td>Blinkit / Zepto</td><td><span class="badge badge-green">Q-Com</span></td><td class="price-lowest">₹ 40</td><td class="muted">10–15 min</td><td><span class="badge badge-green">Best overall</span></td></tr>
+            <tr><td>BigBasket</td><td><span class="badge badge-blue">E-Com</span></td><td>₹ 42</td><td class="muted">Same day</td><td><span class="badge badge-amber">Balanced</span></td></tr>
+            <tr style="border-top:2px solid var(--border);"><td rowspan="2"><strong>Oreo Cookies 120g</strong></td><td>BigBasket</td><td><span class="badge badge-blue">E-Com</span></td><td class="price-lowest">₹ 26</td><td class="muted">Same day</td><td><span class="badge badge-blue">Cheapest</span></td></tr>
+            <tr><td>Blinkit</td><td><span class="badge badge-green">Q-Com</span></td><td>₹ 30</td><td class="muted">15 min</td><td><span class="badge badge-green">Fastest</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="time-compare-grid">
+        <div class="time-card">
+          <div class="time-card-header"><span>Amul Butter 500g — Price by Platform</span><span class="badge badge-amber">Cat C</span></div>
+          <div class="time-sparkline">
+            <div class="spark-bar-row"><span class="spark-bar-label">Amazon.in</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:88%;background:#10b981;"></div></div><span class="spark-bar-val" style="color:#10b981;">₹245</span></div>
+            <div class="spark-bar-row"><span class="spark-bar-label">BigBasket</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:94%;background:#0ea5e9;"></div></div><span class="spark-bar-val" style="color:#0ea5e9;">₹255</span></div>
+            <div class="spark-bar-row"><span class="spark-bar-label">Blinkit</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:98%;background:#f59e0b;"></div></div><span class="spark-bar-val" style="color:#f59e0b;">₹260</span></div>
+            <div class="spark-bar-row"><span class="spark-bar-label">Zepto</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:98%;background:#f59e0b;"></div></div><span class="spark-bar-val" style="color:#f59e0b;">₹260</span></div>
+          </div>
+        </div>
+        <div class="time-card">
+          <div class="time-card-header"><span>Amul Butter 500g — Delivery Time</span><span class="badge badge-purple">Time compare</span></div>
+          <div class="time-sparkline">
+            <div class="spark-bar-row"><span class="spark-bar-label">Blinkit</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:8%;background:#10b981;"></div></div><span class="spark-bar-val" style="color:#10b981;">12 min</span></div>
+            <div class="spark-bar-row"><span class="spark-bar-label">Zepto</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:12%;background:#10b981;"></div></div><span class="spark-bar-val" style="color:#10b981;">18 min</span></div>
+            <div class="spark-bar-row"><span class="spark-bar-label">BigBasket</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:55%;background:#0ea5e9;"></div></div><span class="spark-bar-val" style="color:#0ea5e9;">~4 hr</span></div>
+            <div class="spark-bar-row"><span class="spark-bar-label">Amazon.in</span><div class="spark-bar-track"><div class="spark-bar-fill" style="width:100%;background:#ef4444;"></div></div><span class="spark-bar-val" style="color:#ef4444;">1–2 day</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 4. SYSTEM ARCHITECTURE ═══ -->
+  <section class="section" id="system-arch">
+    <div class="section-header">
+      <div class="section-num purple">4</div>
+      <h2>System Architecture</h2>
+    </div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+graph TB
+    subgraph CLIENT["Client Layer"]
+        WEB["Web App (Next.js)"]
+        MOBILE["Mobile App (React Native)"]
+        WIDGET["Embed Widget (JS)"]
+    end
+    subgraph APIGW["API Gateway Layer"]
+        CDN["CloudFront CDN"]
+        GW["AWS API Gateway + WAF"]
+    end
+    subgraph BACKEND["Backend Services"]
+        SEARCH["Search Service"]
+        PRICE["Price Service"]
+        ALERT["Alert + Beep Service"]
+        AUTH["Auth Service"]
+        CATTYPE["Commodity Classifier"]
+    end
+    subgraph CRAWLERS["Crawler Engine — Two Tracks"]
+        SCHED["Scheduler (EventBridge)"]
+        PLAY["QC Crawler (Playwright)"]
+        SCPY["E-Com Crawler (Scrapy)"]
+        PROXY["Proxy Rotator"]
+        FREQ["Adaptive Frequency Engine"]
+    end
+    subgraph DATA["Data Layer"]
+        PG["PostgreSQL 16"]
+        REDIS["Redis (Cache + Queue + Pub/Sub)"]
+        S3["S3 (Raw HTML + Logs)"]
+        ES["OpenSearch (Search Index)"]
+    end
+    subgraph NOTIFY["Notifications"]
+        SQS["AWS SQS"]
+        LAM["Lambda Dispatcher"]
+        SES["SES Email"]
+        FCM["FCM / APNs Push"]
+        WA["WhatsApp API"]
+    end
+
+    WEB & MOBILE & WIDGET --> CDN --> GW
+    GW --> SEARCH & PRICE & ALERT & AUTH & CATTYPE
+    SEARCH --> ES & REDIS
+    PRICE --> PG & REDIS
+    ALERT --> SQS & REDIS
+    CATTYPE --> PG
+    SQS --> LAM --> SES & FCM & WA
+    SCHED --> PLAY & SCPY
+    PLAY & SCPY --> PROXY
+    PLAY & SCPY --> FREQ
+    PLAY --> PG & ES & REDIS & S3
+    SCPY --> PG & ES & REDIS & S3
+
+    style CLIENT fill:#0f1f3d,stroke:#1e3a6e,color:#93c5fd
+    style APIGW fill:#0d2238,stroke:#1e3a6e,color:#7dd3fc
+    style BACKEND fill:#0f2a1f,stroke:#1a4a2e,color:#6ee7b7
+    style CRAWLERS fill:#2a1a0e,stroke:#4a3018,color:#fcd34d
+    style DATA fill:#1a0f2e,stroke:#3a1a6e,color:#c4b5fd
+    style NOTIFY fill:#2a0f0f,stroke:#5a1a1a,color:#fca5a5
+      </div>
+      <div class="diagram-caption">Figure 1 — System architecture. Two crawler tracks: Playwright for QC (SPA) and Scrapy for E-Com (server-rendered). Commodity Classifier service keeps the three-category model up to date.</div>
+    </div>
+  </section>
+
+  <!-- ═══ 5. API ARCHITECTURE (REQ 4) ═══ -->
+  <section class="section" id="api-arch">
+    <div class="section-header">
+      <div class="section-num indigo">5</div>
+      <h2>API Architecture — Design Principles</h2>
+    </div>
+    <div class="alert alert-blue">
+      <strong>RESTful + Event-driven hybrid:</strong> Public-facing endpoints are REST over HTTPS via AWS API Gateway. Internal service-to-service communication (crawler → alert service, price service → beep engine) uses Redis pub/sub and AWS SQS FIFO queues — not synchronous HTTP — to decouple write latency from user-facing reads.
+    </div>
+    <div class="api-arch-grid">
+      <div class="api-arch-card">
+        <h3><span style="color:var(--accent2);">⬛</span> Public Read APIs</h3>
+        <p>All product search, price, and history endpoints are public (no auth). Rate-limited to 60 req/min per IP via API Gateway usage plan. Responses cached at CloudFront (15 min–1 hr) and Redis (5–30 min). These are the APIs consumed by the web app, mobile app, and embed widget.</p>
+        <div class="pills"><span class="pill pill-blue">REST / JSON</span><span class="pill pill-green">CloudFront cached</span><span class="pill pill-amber">60 req/min/IP</span></div>
+      </div>
+      <div class="api-arch-card">
+        <h3><span style="color:var(--accent3);">⬛</span> Authenticated Write APIs</h3>
+        <p>Alert creation/deletion, user profile, basket save — all require JWT (issued by Auth Service via magic-link or Google OAuth). Tokens are short-lived (15 min) with refresh tokens (7 days). No API key to manage for end users.</p>
+        <div class="pills"><span class="pill pill-purple">JWT RS256</span><span class="pill pill-blue">Magic link auth</span><span class="pill pill-green">Google OAuth2</span></div>
+      </div>
+      <div class="api-arch-card">
+        <h3><span style="color:var(--accent4);">⬛</span> Publisher / Widget API Key</h3>
+        <p>Third-party publishers embedding the price widget get an API key (not JWT). Keys are rate-limited per domain (1,000 req/day free tier, paid tiers for higher volume). API key is scoped to read-only widget endpoints only.</p>
+        <div class="pills"><span class="pill pill-amber">API Key scoped</span><span class="pill pill-teal">JSONP + JSON</span></div>
+      </div>
+      <div class="api-arch-card">
+        <h3><span style="color:var(--accent5);">⬛</span> Internal / Admin APIs</h3>
+        <p>Crawler status, normalisation queue, proxy health — internal admin APIs behind a separate admin JWT role. These endpoints are NOT exposed via CloudFront; they hit the load balancer directly and are IP-allowlisted to the VPN.</p>
+        <div class="pills"><span class="pill pill-red">Admin role JWT</span><span class="pill pill-purple">VPN + IP allowlist</span></div>
+      </div>
+    </div>
+    <div class="diagram-wrap" style="margin-top:6px;">
+      <div class="mermaid">
+graph LR
+    A["Client App / Widget"] -->|"REST GET (public)"| B["CloudFront CDN"]
+    B -->|cache miss| C["API Gateway + WAF"]
+    C -->|rate check| D["Price / Search / Beep Service"]
+    D -->|cache hit| E["Redis"]
+    D -->|cache miss| F["PostgreSQL / OpenSearch"]
+    F --> D --> E --> B --> A
+
+    G["Authenticated User"] -->|"REST POST JWT"| C
+    C --> H["Auth Middleware"]
+    H -->|valid| I["Alert / Basket Service"]
+    I --> F
+
+    J["Admin"] -->|"Internal JWT + VPN"| K["ALB (internal)"]
+    K --> L["Admin Service"]
+    L --> F
+
+    style A fill:#0f1f3d,stroke:#1e3a6e,color:#93c5fd
+    style G fill:#0f1f3d,stroke:#1e3a6e,color:#93c5fd
+    style J fill:#2a0f0f,stroke:#5a1a1a,color:#fca5a5
+    style B fill:#0d2238,stroke:#1e3a6e,color:#7dd3fc
+    style E fill:#1a0f2e,stroke:#3a1a6e,color:#c4b5fd
+    style F fill:#1a0f2e,stroke:#3a1a6e,color:#c4b5fd
+      </div>
+      <div class="diagram-caption">Figure 2 — API request flows. Public reads go through CDN → API GW → Redis (cache-first). Writes bypass CDN. Admin is on a private ALB.</div>
+    </div>
+  </section>
+
+  <!-- ═══ 6. CRAWLER ENGINE ═══ -->
+  <section class="section" id="crawler">
+    <div class="section-header">
+      <div class="section-num amber">6</div>
+      <h2>Crawler Engine — Two Tracks</h2>
+    </div>
+    <div class="alert alert-amber">
+      <strong>E-Com vs Quick-Com require fundamentally different crawl strategies:</strong> E-Com sites (Amazon, BigBasket) are server-rendered or hydrated HTML — Scrapy + HTTP requests are sufficient, cheap, and fast. Quick-Commerce apps (Blinkit, Zepto, Instamart) are JavaScript SPAs with location-gating — require Playwright headless browser emulating a real device at a specific pin-code. Two separate worker fleets.
+    </div>
+    <div class="two-col" style="margin-bottom:16px;">
+      <div class="card">
+        <h3>E-Commerce Track (Scrapy)</h3>
+        <div class="tbl-wrap" style="border:none;margin-top:8px;">
+          <table>
+            <thead><tr><th>Platform</th><th>Method</th><th>Base Freq</th></tr></thead>
+            <tbody>
+              <tr><td>Amazon.in</td><td class="code">PA-API + Scrapy fallback</td><td class="muted">6 hr</td></tr>
+              <tr><td>BigBasket</td><td class="code">Scrapy + requests</td><td class="muted">6 hr</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pills"><span class="pill pill-blue">Scrapy 2.x</span><span class="pill pill-green">Amazon PA-API</span><span class="pill pill-amber">Celery + Redis</span></div>
+      </div>
+      <div class="card">
+        <h3>Quick-Commerce Track (Playwright)</h3>
+        <div class="tbl-wrap" style="border:none;margin-top:8px;">
+          <table>
+            <thead><tr><th>Platform</th><th>Method</th><th>Base Freq</th></tr></thead>
+            <tbody>
+              <tr><td>Blinkit</td><td class="code">Playwright + GraphQL</td><td class="muted">4 hr</td></tr>
+              <tr><td>Zepto</td><td class="code">Playwright + REST</td><td class="muted">4 hr</td></tr>
+              <tr><td>Swiggy Instamart</td><td class="code">Playwright + REST</td><td class="muted">4 hr</td></tr>
+              <tr><td>Country Delight</td><td class="code">Direct REST API</td><td class="muted">2 hr</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pills"><span class="pill pill-amber">Playwright Python</span><span class="pill pill-purple">Playwright Stealth</span><span class="pill pill-red">BrightData Proxy</span></div>
+      </div>
+    </div>
+    <h3 style="color:var(--text);font-size:14px;margin-bottom:12px;">Crawl Lifecycle (both tracks)</h3>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="step-line"><div class="step-dot">1</div></div><div class="step-body"><h4>Scheduler Triggers Job</h4><p>EventBridge fires a cron per platform per crawl window. Emits a Celery task: <code>{ platform, track, category_url, pin_code, crawl_id }</code>. QC tasks include pin_code; E-Com tasks do not.</p></div></div>
+      <div class="flow-step"><div class="step-line"><div class="step-dot">2</div></div><div class="step-body"><h4>Worker Initialises</h4><p>Fargate container dequeues task. For QC track: selects residential proxy IP, randomises browser fingerprint, launches Playwright session with pin-code injection. For E-Com track: configures Scrapy spider with rotating User-Agent + cookie pool.</p></div></div>
+      <div class="flow-step"><div class="step-line"><div class="step-dot">3</div></div><div class="step-body"><h4>Scrape, Extract & Validate</h4><p>Extracts: <code>product_name, sku_id, price_inr, mrp_inr, discount_pct, in_stock, image_url, pack_size, delivery_eta_min</code>. The <code>delivery_eta_min</code> field is populated for QC platforms only (e.g., Blinkit ETA shown in-app). Pydantic schema validation rejects malformed records.</p></div></div>
+      <div class="flow-step"><div class="step-line"><div class="step-dot">4</div></div><div class="step-body"><h4>Dedup, Normalise & Classify</h4><p>Fuzzy match against product catalogue. Assign commodity_type (A/B/C) based on whether the canonical product already has listings on the other track. Newly seen products go to the normalisation queue for admin review.</p></div></div>
+      <div class="flow-step"><div class="step-line"><div class="step-dot">5</div></div><div class="step-body"><h4>Persist, Cache & Publish</h4><p>Insert into <code>price_snapshots</code>. Update Redis latest-price key. Publish to <code>price_update_channel</code> for the Alert/Beep Service. Refresh the <code>beeps:top10</code> key if any top-10 product was updated.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ═══ 7. CRAWL FREQUENCY LOGIC (REQ 5) ═══ -->
+  <section class="section" id="crawler-freq">
+    <div class="section-header">
+      <div class="section-num green">7</div>
+      <h2>Adaptive Crawl Frequency — Lowest or Remove</h2>
+    </div>
+    <div class="alert alert-green">
+      <strong>Core rule (Req 5):</strong> A product's crawl frequency adapts to its price volatility. High-volatility products (frequent price changes) are crawled more often. Products that show no change over an extended window are either downgraded to the lowest tier, or — if absent from the platform for long enough — removed from the active crawl list entirely and flagged as "discontinued" in the catalogue.
+    </div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+graph TD
+    A["Product enters crawl list"] --> B["Base frequency: 4 hr (QC) / 6 hr (E-Com)"]
+    B --> C{Price changed in last 5 crawls?}
+    C -->|Yes > 3 times| D["Upgrade: crawl every 2 hr"]
+    C -->|Yes 1-2 times| E["Keep base frequency"]
+    C -->|No change| F["Downgrade: crawl every 12 hr"]
+    D --> G{"Still changing?"}
+    G -->|Yes| D
+    G -->|No for 48 hr| E
+    F --> H{"No change for 7 days?"}
+    H -->|No| F
+    H -->|Yes| I["Move to lowest tier: 24 hr"]
+    I --> J{"Product gone / 404 / out-of-stock 3x?"}
+    J -->|No| I
+    J -->|Yes| K["Mark discontinued — remove from active crawl"]
+    K --> L["Notify users with alerts set on this product"]
+    L --> M["Archive in DB — keep price history"]
+
+    style A fill:#0f2a1f,stroke:#1a4a2e,color:#6ee7b7
+    style D fill:#0f1f3d,stroke:#1e3a6e,color:#93c5fd
+    style F fill:#2a1a0e,stroke:#4a3018,color:#fcd34d
+    style I fill:#78350f,stroke:#92400e,color:#fcd34d
+    style K fill:#2a0f0f,stroke:#5a1a1a,color:#fca5a5
+    style M fill:#1a0f2e,stroke:#3a1a6e,color:#c4b5fd
+      </div>
+      <div class="diagram-caption">Figure 3 — Adaptive frequency engine. Products that stop changing are downgraded. Products that disappear from a platform are removed from the active crawl and users with alerts are notified.</div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h3>Frequency Tiers</h3>
+        <div class="tbl-wrap" style="border:none;margin-top:8px;">
+          <table>
+            <thead><tr><th>Tier</th><th>Interval</th><th>Condition</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-blue">Hot</span></td><td class="muted">Every 1–2 hr</td><td class="muted">Price changed &gt;3 times in last 5 crawls</td></tr>
+              <tr><td><span class="badge badge-green">Active</span></td><td class="muted">Every 4–6 hr</td><td class="muted">Default / base frequency</td></tr>
+              <tr><td><span class="badge badge-amber">Slow</span></td><td class="muted">Every 12 hr</td><td class="muted">No change for 7 days</td></tr>
+              <tr><td><span class="badge badge-red">Minimum</span></td><td class="muted">Every 24 hr</td><td class="muted">No change for 30 days</td></tr>
+              <tr><td><span class="badge badge-red">Removed</span></td><td class="muted">Archived</td><td class="muted">404 / out-of-stock 3× or delisted</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Removal & User Notification</h3>
+        <p>When a product is removed from a platform's active crawl, two things happen: (1) all active alerts for that product+platform pair are auto-triggered once with message "Product no longer available on [Platform] — price was ₹X when last seen." (2) The product detail page shows a "Last seen" badge instead of a live price. Historical data is kept indefinitely.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 8. ANTI-BLOCK ═══ -->
+  <section class="section" id="anti-block">
+    <div class="section-header">
+      <div class="section-num red">8</div>
+      <h2>Anti-Block & Rate Management</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card"><h3>🌐 Proxy Rotation</h3><p>Residential proxy pool via BrightData. IPs rotate per request. Indian ISP targeting (Jio, Airtel) to avoid geo-blocks. QC crawlers use mobile-network proxies to mimic Android app traffic.</p></div>
+      <div class="card"><h3>🎭 Browser Fingerprint</h3><p>Playwright-Stealth injects: realistic <code>navigator</code> properties, WebGL renderer, canvas hash, WebRTC suppression, Chrome/Android user-agents. Fingerprints rotate per session.</p></div>
+      <div class="card"><h3>⏱️ Human-Mimicry</h3><p>Random delay 800–2400 ms between actions. Randomised scroll events. Mouse movement with Bézier curves. QC track also emulates app scroll-to-load for infinite product grids.</p></div>
+      <div class="card"><h3>🍪 Session Pools</h3><p>Per-platform cookie pools refreshed nightly. 5–10 dummy accounts per platform where login is required. Session rotation on detect signal.</p></div>
+      <div class="card"><h3>🔁 CAPTCHA Handling</h3><p>2Captcha / CapSolver for reCAPTCHA v2/v3 and hCaptcha. Auto-retry with fresh proxy. Exponential backoff on excessive CAPTCHA rate.</p></div>
+      <div class="card"><h3>📊 Block Detection</h3><p>Monitor for 403/429, bot-detection redirects, empty price grids. 3 failures → CloudWatch alert → ops Slack. Per-platform block rate tracked as a custom metric in Grafana.</p></div>
+    </div>
+    <div class="alert alert-red" style="margin-top:16px;"><strong>⚠️ Legal Note:</strong> Crawling e-commerce platforms is legally grey. Review each platform's <code>robots.txt</code> and ToS before deploying. For Amazon, use the official PA-API as primary; Scrapy as fallback only. Rate-limit aggressively to avoid service disruption.</div>
+  </section>
+
+  <!-- ═══ 9. DATA PIPELINE ═══ -->
+  <section class="section" id="data-pipeline">
+    <div class="section-header">
+      <div class="section-num teal">9</div>
+      <h2>Data Pipeline & Schema</h2>
+    </div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+erDiagram
+    products {
+        uuid id PK
+        string canonical_name
+        string brand
+        string category
+        string ean_barcode
+        string commodity_type
+        float unit_size
+        string unit_label
+        timestamp created_at
+    }
+    platform_listings {
+        uuid id PK
+        uuid product_id FK
+        string platform
+        string platform_track
+        string platform_sku_id
+        string listing_url
+        string pin_code
+        string crawl_tier
+        boolean active
+    }
+    price_snapshots {
+        uuid id PK
+        uuid listing_id FK
+        integer price_inr
+        integer mrp_inr
+        integer discount_pct
+        boolean in_stock
+        integer delivery_eta_min
+        timestamp crawled_at
+    }
+    price_alerts {
+        uuid id PK
+        uuid user_id FK
+        uuid product_id FK
+        string platform_filter
+        integer target_price_inr
+        string channel
+        boolean active
+        timestamp triggered_at
+    }
+    users {
+        uuid id PK
+        string email
+        string phone
+        string plan
+        timestamp created_at
+    }
+
+    products ||--o{ platform_listings : "listed on"
+    platform_listings ||--o{ price_snapshots : "has snapshots"
+    users ||--o{ price_alerts : "sets"
+    products ||--o{ price_alerts : "watched via"
+      </div>
+      <div class="diagram-caption">Figure 4 — Schema. <code>commodity_type</code> (A/B/C) on products. <code>platform_track</code> (ecom/qcom) on listings. <code>delivery_eta_min</code> on snapshots (QC only). <code>crawl_tier</code> on listings drives adaptive frequency.</div>
+    </div>
+    <details>
+      <summary>View: Key SQL patterns</summary>
+      <div class="detail-body">
+        <pre style="font-family:monospace;font-size:12px;color:#7dd3fc;line-height:1.6;white-space:pre-wrap;">
+-- Upsert price snapshot
+INSERT INTO price_snapshots
+  (id, listing_id, price_inr, mrp_inr, discount_pct, in_stock, delivery_eta_min, crawled_at)
+VALUES (gen_random_uuid(), $1, $2, $3,
+   ROUND((($3-$2)::float/$3)*100)::int, $4, $5, NOW())
+ON CONFLICT (listing_id, date_trunc('hour', crawled_at))
+DO UPDATE SET price_inr=EXCLUDED.price_inr, in_stock=EXCLUDED.in_stock,
+              delivery_eta_min=EXCLUDED.delivery_eta_min;
+
+-- Adaptive tier update (run post-crawl per product per platform)
+UPDATE platform_listings SET crawl_tier =
+  CASE
+    WHEN (SELECT COUNT(*) FROM price_snapshots ps2
+          WHERE ps2.listing_id=pl.id
+          AND ps2.crawled_at > NOW()-INTERVAL '5 crawls'
+          -- simplified: use window function in production
+          ) > 3 THEN 'hot'
+    WHEN last_price_change < NOW()-INTERVAL '30 days' THEN 'minimum'
+    WHEN last_price_change < NOW()-INTERVAL '7 days'  THEN 'slow'
+    ELSE 'active'
+  END
+FROM platform_listings pl WHERE platform_listings.id = pl.id;
+
+-- Category C: cross-listed view (both tracks present)
+CREATE MATERIALIZED VIEW cross_listed_products AS
+SELECT p.id, p.canonical_name, p.brand,
+  MAX(CASE WHEN pl.platform_track='ecom' THEN ps.price_inr END) AS ecom_price,
+  MAX(CASE WHEN pl.platform_track='qcom' THEN ps.price_inr END) AS qcom_price,
+  MIN(CASE WHEN pl.platform_track='qcom' THEN ps.delivery_eta_min END) AS min_delivery_min
+FROM products p
+JOIN platform_listings pl ON pl.product_id=p.id
+JOIN price_snapshots ps ON ps.listing_id=pl.id
+  AND ps.crawled_at > NOW()-INTERVAL '8 hours'
+GROUP BY p.id, p.canonical_name, p.brand
+HAVING COUNT(DISTINCT pl.platform_track) = 2;
+        </pre>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 10. API ENDPOINTS ═══ -->
+  <section class="section" id="api">
+    <div class="section-header">
+      <div class="section-num indigo">10</div>
+      <h2>API Endpoints</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th><th>Cache</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/search?q=&amp;pin=&amp;track=</td><td class="muted">Full-text search. <code>track=ecom|qcom|all</code>. Returns top 20 with commodity_type and best price.</td><td class="muted">Public</td><td class="muted">Redis 15m</td></tr>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/products/:id/prices</td><td class="muted">All platform prices. Includes delivery_eta_min for QC platforms. Groups by track.</td><td class="muted">Public</td><td class="muted">Redis 30m</td></tr>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/products/:id/history</td><td class="muted">Price + delivery_eta history. <code>?track=qcom</code> to filter QC-only time series.</td><td class="muted">Public</td><td class="muted">CDN 1hr</td></tr>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/beeps/top10</td><td class="muted">Returns top 10 Beeps (best price signals today). Source: Redis <code>beeps:top10</code>.</td><td class="muted">Public</td><td class="muted">Redis 15m</td></tr>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/commodities?type=A|B|C</td><td class="muted">List products by commodity type. Type C includes cross-listed price-vs-time data.</td><td class="muted">Public</td><td class="muted">CDN 2hr</td></tr>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/categories</td><td class="muted">Category list with cheapest platform stats and commodity type distribution breakdown.</td><td class="muted">Public</td><td class="muted">CDN 6hr</td></tr>
+          <tr><td><span class="badge badge-blue">POST</span></td><td class="code">/v1/alerts</td><td class="muted">Create alert. Body: <code>{ product_id, target_price_inr, channel, platform_filter? }</code>. <code>platform_filter</code> allows E-Com only / QC only.</td><td class="muted">JWT</td><td class="muted">—</td></tr>
+          <tr><td><span class="badge badge-amber">DELETE</span></td><td class="code">/v1/alerts/:id</td><td class="muted">Delete alert.</td><td class="muted">JWT</td><td class="muted">—</td></tr>
+          <tr><td><span class="badge badge-blue">POST</span></td><td class="code">/v1/basket/optimise</td><td class="muted">Basket optimiser. Returns split-purchase recommendation across platforms factoring delivery fee.</td><td class="muted">JWT</td><td class="muted">Redis 10m</td></tr>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/widget/:product_id</td><td class="muted">Embed widget data. Returns JSON/JSONP. Includes commodity_type for widget styling.</td><td class="muted">API Key</td><td class="muted">CDN 15m</td></tr>
+          <tr><td><span class="badge badge-green">GET</span></td><td class="code">/v1/admin/crawl-status</td><td class="muted">Per-platform crawl health, block rate, tier distribution, discontinued count. Internal.</td><td class="muted">Admin</td><td class="muted">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ 11. UI MODULES ═══ -->
+  <section class="section" id="ui-modules">
+    <div class="section-header">
+      <div class="section-num">11</div>
+      <h2>Frontend UI Modules</h2>
+    </div>
+    <div class="two-col">
+      <div class="card"><h3>Search & Results</h3><p>Debounced search with autocomplete. Filter toggle: E-Com / Q-Com / Both. Results show commodity type badge per product. Price column grouped by track. Sortable by price, discount, or delivery time.</p><div class="pills"><span class="pill pill-blue">Next.js 14</span><span class="pill pill-green">TanStack Query</span><span class="pill pill-amber">Tailwind CSS</span></div></div>
+      <div class="card"><h3>Product Detail — Category C</h3><p>For cross-listed products: side-by-side price + delivery time matrix. "I want it now" (QC filter) vs "I want it cheapest" (E-Com filter) toggle. Price history chart with dual-axis: ₹ price on Y1, delivery minutes on Y2.</p><div class="pills"><span class="pill pill-blue">Recharts dual-axis</span><span class="pill pill-purple">ISR 30m</span></div></div>
+      <div class="card"><h3>Global Focus Ticker</h3><p>Fixed banner at top of every page. Scrolls the live top-10 Beeps. Shows rank, product name, best price today, platform, and whether price went up or down vs yesterday. Pauses on hover.</p><div class="pills"><span class="pill pill-green">CSS marquee</span><span class="pill pill-amber">Redis-backed</span></div></div>
+      <div class="card"><h3>My Alerts Dashboard</h3><p>Active alerts per user with current price vs target. <code>platform_filter</code> badge (E-Com / Q-Com / Any). Alert history log. Notification preference per alert. Discontinued alerts shown separately.</p><div class="pills"><span class="pill pill-blue">JWT Auth</span><span class="pill pill-amber">WebSocket updates</span></div></div>
+      <div class="card"><h3>Basket Optimiser</h3><p>Multi-item cart. Calls <code>/v1/basket/optimise</code>. Shows recommended split across platforms. Displays delivery fee impact and estimated total delivery time per split option.</p><div class="pills"><span class="pill pill-green">Greedy optimiser</span></div></div>
+      <div class="card"><h3>Admin Panel</h3><p>Crawl health per platform and per track. Frequency tier distribution chart. Discontinued products queue. Normalisation queue. Proxy block-rate per platform. Beep engine status.</p><div class="pills"><span class="pill pill-red">Admin JWT</span><span class="pill pill-purple">Custom React</span></div></div>
+    </div>
+  </section>
+
+  <!-- ═══ 12. PRICE ALERTS ═══ -->
+  <section class="section" id="price-alert">
+    <div class="section-header">
+      <div class="section-num green">12</div>
+      <h2>Price Alert System</h2>
+    </div>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+sequenceDiagram
+    participant CW as Crawler Worker
+    participant DB as PostgreSQL
+    participant R as Redis
+    participant AS as Alert + Beep Service
+    participant SQS as AWS SQS
+    participant L as Lambda
+    participant U as User
+
+    CW->>DB: INSERT price_snapshot (price=₹235, eta=12min)
+    CW->>R: SET latest_price:prod:platform = 235
+    CW->>R: PUBLISH price_update_channel
+    R-->>AS: Receive update event
+    AS->>R: GET beeps:top10 — check if product qualifies
+    AS->>DB: SELECT alerts WHERE target_price >= 235 AND active=true
+    DB-->>AS: [alert: user=7, channel=whatsapp, filter=qcom]
+    AS->>DB: UPDATE alert SET triggered_at=NOW()
+    AS->>R: UPDATE beeps:top10 if top-10 changed
+    AS->>SQS: { user_id, channel, product, price, platform, eta_min, url }
+    SQS-->>L: Trigger Lambda
+    L->>U: "Amul Butter ₹235 on Blinkit (12 min delivery) ↗"
+      </div>
+      <div class="diagram-caption">Figure 5 — Alert + Beep flow. The <code>delivery_eta_min</code> is included in the notification so users know whether this is a quick-commerce deal.</div>
+    </div>
+    <div class="grid-3" style="margin-top:16px;">
+      <div class="card"><h3>📱 WhatsApp Business API</h3><p>Meta Cloud API via BSP (Interakt/Wati). Template includes: product name, platform, price, delivery ETA, buy link. Opt-out: reply STOP.</p></div>
+      <div class="card"><h3>📧 Email (AWS SES)</h3><p>HTML email with product image, price comparison table (both tracks), and "Buy Now" CTA. Unsubscribe link mandatory. SES bounce/complaint handling.</p></div>
+      <div class="card"><h3>🔔 Push (FCM/APNs)</h3><p>Rich push with product image. Notification taps deep-link to product detail page. Per-product push preference. Badge count on app icon.</p></div>
+    </div>
+  </section>
+
+  <!-- ═══ 13. INFRA ═══ -->
+  <section class="section" id="infra">
+    <div class="section-header">
+      <div class="section-num amber">13</div>
+      <h2>Cloud Infrastructure (AWS ap-south-1)</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Component</th><th>AWS Service</th><th>Config</th><th>Est. Monthly</th></tr></thead>
+        <tbody>
+          <tr><td>Web App</td><td class="muted">Vercel / EC2 + ALB</td><td class="muted">Next.js ISR. Vercel at launch → EC2 at scale.</td><td class="muted">₹0–₹8k</td></tr>
+          <tr><td>API Gateway</td><td class="muted">AWS API Gateway (HTTP)</td><td class="muted">WAF for rate-limiting. Usage plans per API key.</td><td class="muted">₹800–₹3k</td></tr>
+          <tr><td>Backend Services</td><td class="muted">ECS Fargate (Node.js)</td><td class="muted">2–10 tasks. ALB. Mumbai region.</td><td class="muted">₹6k–₹18k</td></tr>
+          <tr><td>QC Crawlers</td><td class="muted">ECS Fargate (Playwright)</td><td class="muted">Spot. 2 vCPU / 4 GB. 6–12 concurrent at peak.</td><td class="muted">₹8k–₹22k</td></tr>
+          <tr><td>E-Com Crawlers</td><td class="muted">ECS Fargate (Scrapy)</td><td class="muted">Lighter. 1 vCPU / 2 GB. 3–6 concurrent.</td><td class="muted">₹3k–₹8k</td></tr>
+          <tr><td>Database</td><td class="muted">RDS PostgreSQL 16 (db.t4g.medium)</td><td class="muted">Multi-AZ. 200 GB gp3. Read replica for analytics.</td><td class="muted">₹9k–₹15k</td></tr>
+          <tr><td>Cache / Queue</td><td class="muted">ElastiCache Redis (cache.t4g.small)</td><td class="muted">Celery broker + API cache + pub/sub + beeps.</td><td class="muted">₹4k–₹7k</td></tr>
+          <tr><td>Search</td><td class="muted">Amazon OpenSearch (t3.small)</td><td class="muted">Product catalogue + price data index.</td><td class="muted">₹5k–₹9k</td></tr>
+          <tr><td>CDN</td><td class="muted">AWS CloudFront</td><td class="muted">Price Class 200 (India + Asia). ACM cert.</td><td class="muted">₹1k–₹4k</td></tr>
+          <tr><td>Storage</td><td class="muted">AWS S3</td><td class="muted">Raw HTML (30-day lifecycle → Glacier). Images.</td><td class="muted">₹500–₹2k</td></tr>
+          <tr><td>Notifications</td><td class="muted">SQS FIFO + Lambda + SES</td><td class="muted">128 MB Lambda. SES production access.</td><td class="muted">₹500–₹2k</td></tr>
+          <tr><td>Monitoring</td><td class="muted">CloudWatch + Grafana</td><td class="muted">Custom: crawl success rate, beep latency, tier dist.</td><td class="muted">₹1k–₹3k</td></tr>
+          <tr><td>Proxy Pool</td><td class="muted">BrightData Residential</td><td class="muted">50–150 GB/month. Indian ISP targeting.</td><td class="muted">₹15k–₹40k</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-amber" style="margin-top:14px;"><strong>Total estimated monthly:</strong> ₹53k–₹1.4L/month at launch. Proxy cost is the dominant variable. Separating the two crawler fleets (QC/E-Com) allows independent scaling — QC crawlers scale more aggressively since they need Playwright.</div>
+  </section>
+
+  <!-- ═══ 14. DEPLOY ═══ -->
+  <section class="section" id="deploy">
+    <div class="section-header">
+      <div class="section-num purple">14</div>
+      <h2>Deployment & DevOps</h2>
+    </div>
+    <div class="two-col">
+      <div class="card"><h3>IaC — Terraform</h3><p>All AWS resources in Terraform. Modules: <code>vpc</code>, <code>ecs-cluster</code>, <code>rds</code>, <code>elasticache</code>, <code>opensearch</code>, <code>apigw</code>, <code>cloudfront</code>. S3 + DynamoDB remote state. Separate workspaces: <code>staging</code> / <code>prod</code>.</p><div class="pills"><span class="pill pill-purple">Terraform 1.7+</span><span class="pill pill-amber">Terragrunt</span></div></div>
+      <div class="card"><h3>CI/CD Pipeline</h3><p>GitHub Actions: lint → unit tests → crawler smoke tests → ECR push → ECS staging deploy → QA sign-off → Blue/Green prod deploy. Separate pipelines for <code>api-server</code>, <code>qc-crawler</code>, <code>ecom-crawler</code>, <code>alert-service</code>.</p><div class="pills"><span class="pill pill-blue">GitHub Actions</span><span class="pill pill-green">Blue/Green ECS</span></div></div>
+      <div class="card"><h3>Secrets Management</h3><p>All secrets (DB, proxy API keys, WhatsApp token, CAPTCHA solver key) in AWS Secrets Manager. Injected at ECS task launch via task definition <code>secrets</code> block. Never in env vars or repo.</p></div>
+      <div class="card"><h3>Database Migrations</h3><p>Flyway for versioned PostgreSQL migrations. Runs as one-off ECS task before each deploy. Backwards-compatible schema changes first, code deploy, then cleanup migration. Zero-downtime pattern.</p></div>
+    </div>
+  </section>
+
+  <!-- ═══ 15. LEGAL ═══ -->
+  <section class="section" id="legal">
+    <div class="section-header">
+      <div class="section-num red">15</div>
+      <h2>Legal, Compliance & Ethics</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Area</th><th>Requirement</th><th>Implementation</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>DPDP Act 2023</strong></td><td class="muted">Consent for email/phone. Erasure right.</td><td class="muted">Consent checkbox at signup. DELETE /v1/users/me. 2-year retention policy.</td><td><span class="badge badge-amber">Design Required</span></td></tr>
+          <tr><td><strong>robots.txt</strong></td><td class="muted">Respect Crawl-Delay + Disallow.</td><td class="muted">Crawlers read robots.txt at startup. Disallowed paths skipped. Crawl-Delay via Celery rate limiter.</td><td><span class="badge badge-green">Implemented</span></td></tr>
+          <tr><td><strong>Price accuracy</strong></td><td class="muted">Displayed prices match checkout price. MRP rules.</td><td class="muted">"Prices may change" disclaimer. Timestamp shown. Deep-link for final confirmation.</td><td><span class="badge badge-green">Implemented</span></td></tr>
+          <tr><td><strong>Affiliate disclosure</strong></td><td class="muted">ASCI disclosure for affiliate links.</td><td class="muted">Footer disclosure on all pages. Per-link label for affiliate vs organic.</td><td><span class="badge badge-amber">Copy Review</span></td></tr>
+          <tr><td><strong>Amazon ToS</strong></td><td class="muted">PA-API preferred over scraping.</td><td class="muted">Apply for PA-API. Scrapy as fallback only during API downtime.</td><td><span class="badge badge-red">Application Needed</span></td></tr>
+          <tr><td><strong>WhatsApp Business</strong></td><td class="muted">Opt-in only. Pre-approved templates.</td><td class="muted">Explicit opt-in. Template-only messages. STOP handled. BSP partnership required.</td><td><span class="badge badge-amber">Template Approval Pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ 16. ROADMAP ═══ -->
+  <section class="section" id="roadmap">
+    <div class="section-header">
+      <div class="section-num teal">16</div>
+      <h2>Roadmap</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Phase</th><th>Timeline</th><th>Deliverables</th><th>Metric</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Phase 1</strong><span class="badge badge-green">MVP</span></td><td class="muted">Months 1–2</td><td class="muted">Blinkit + Amazon + Country Delight. 1,000 SKUs. Commodity classifier (A/B/C). Basic email alerts. Global ticker with top-10 beeps.</td><td class="muted">100 DAU, 3 platforms</td></tr>
+          <tr><td><strong>Phase 2</strong><span class="badge badge-blue">Growth</span></td><td class="muted">Months 3–4</td><td class="muted">All 6 platforms. 5,000 SKUs. Price + time history charts for Cat C. WhatsApp alerts. Basket optimiser. Adaptive crawl frequency engine.</td><td class="muted">1,000 DAU, 6 platforms</td></tr>
+          <tr><td><strong>Phase 3</strong><span class="badge badge-amber">Monetise</span></td><td class="muted">Months 5–6</td><td class="muted">Embed widget + publisher API key. Affiliate integration. React Native app. Premium alert tiers. Category C UI: dual-axis chart.</td><td class="muted">₹1L MRR</td></tr>
+          <tr><td><strong>Phase 4</strong><span class="badge badge-purple">Scale</span></td><td class="muted">Months 7–12</td><td class="muted">Tier-2 city pin-codes. ML price trend prediction. B2B API (FMCG competitive intel). Expand to Nykaa, Meesho for non-grocery Cat A.</td><td class="muted">10,000 DAU, B2B contracts</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <hr class="divider">
+    <div class="alert alert-green"><strong>Key Risk:</strong> QC platforms (Blinkit, Zepto) are likely to strengthen anti-scraping over the next 12 months. Budget for ongoing Playwright crawler maintenance (~20% of 1 engineer) and pursue official data-partnership API conversations in parallel with BD teams.</div>
+  </section>
+ 
+  </div>
+</main>
+
+<script>
+/* ═══ TEMPLATE SWITCHER ═══ */
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('tpl-dark').classList.toggle('active', t === 'dark');
+  document.getElementById('tpl-light').classList.toggle('active', t === 'light');
+  reinitMermaid();
+}
+
+/* ═══ ACCENT COLOUR ═══ */
+function setAccent(el, a2, a1) {
+  document.documentElement.style.setProperty('--accent2', a2);
+  document.documentElement.style.setProperty('--accent', a1 || a2);
+  document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ═══ MERMAID INIT ═══ */
+function getMermaidTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'default' : 'dark';
+}
+function reinitMermaid() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: isDark ? 'dark' : 'default',
+    themeVariables: isDark ? {
+      darkMode: true,
+      background: '#111827',
+      primaryColor: '#0f1f3d',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#1e2d47',
+      lineColor: '#334155',
+      secondaryColor: '#0f2a1f',
+      tertiaryColor: '#1a0f2e',
+      edgeLabelBackground: '#111827',
+      clusterBkg: '#0b0f1a',
+      clusterBorder: '#1e2d47',
+      fontSize: '13px'
+    } : {
+      darkMode: false,
+      background: '#ffffff',
+      primaryColor: '#dbeafe',
+      primaryTextColor: '#0f172a',
+      primaryBorderColor: '#93c5fd',
+      lineColor: '#64748b',
+      secondaryColor: '#dcfce7',
+      tertiaryColor: '#fef9c3',
+      fontSize: '13px'
+    },
+    er: { diagramPadding: 20, fontSize: 12 },
+    sequence: { fontSize: 12, messageFontSize: 12, actorFontSize: 12 }
+  });
+}
+
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    darkMode: true,
+    background: '#111827',
+    primaryColor: '#0f1f3d',
+    primaryTextColor: '#e2e8f0',
+    primaryBorderColor: '#1e2d47',
+    lineColor: '#334155',
+    secondaryColor: '#0f2a1f',
+    tertiaryColor: '#1a0f2e',
+    edgeLabelBackground: '#111827',
+    clusterBkg: '#0b0f1a',
+    clusterBorder: '#1e2d47',
+    fontSize: '13px'
+  },
+  er: { diagramPadding: 20, fontSize: 12 },
+  sequence: { fontSize: 12, messageFontSize: 12, actorFontSize: 12 }
+});
+
+/* ═══ COMMODITY CATEGORY TABS (REQ 7/8) ═══ */
+function switchCat(cat) {
+  ['ecom','qcom','both'].forEach(c => {
+    document.getElementById('panel-' + c).classList.remove('active');
+    const tab = document.getElementById('tab-' + c);
+    tab.classList.remove('active-ecom','active-qcom','active-both');
+  });
+  document.getElementById('panel-' + cat).classList.add('active');
+  document.getElementById('tab-' + cat).classList.add('active-' + cat);
+}
+
+/* ═══ TOP 10 BEEPS DATA (REQ 2) ═══ */
+const beepsData = [
+  { rank:1, name:'Amul Butter 500g', cat:'both', platform:'Amazon.in', price:'₹245', prev:'₹265', chg:'dn', sub:'E-Commerce' },
+  { rank:2, name:'Britannia Bread 400g', cat:'both', platform:'Blinkit', price:'₹40', prev:'₹45', chg:'dn', sub:'Quick-Commerce' },
+  { rank:3, name:'Oreo Cookies 120g', cat:'both', platform:'BigBasket', price:'₹26', prev:'₹30', chg:'dn', sub:'E-Commerce' },
+  { rank:4, name:'Aashirvaad Atta 10kg', cat:'ecom', platform:'Amazon.in', price:'₹480', prev:'₹520', chg:'dn', sub:'E-Com Only' },
+  { rank:5, name:'Packaged Salad 100g', cat:'qcom', platform:'Zepto', price:'₹49', prev:'₹55', chg:'dn', sub:'Quick-Com Only' },
+  { rank:6, name:'Amul Doodh 1L', cat:'both', platform:'Country Delight', price:'₹60', prev:'₹64', chg:'dn', sub:'Cross-Listed' },
+  { rank:7, name:'Lays Classic 52g', cat:'both', platform:'Multiple', price:'₹20', prev:'₹22', chg:'dn', sub:'Cross-Listed' },
+  { rank:8, name:'Fortune Oil 5L', cat:'ecom', platform:'BigBasket', price:'₹598', prev:'₹620', chg:'dn', sub:'E-Com Only' },
+  { rank:9, name:'Fresh Cut Papaya 250g', cat:'qcom', platform:'Blinkit', price:'₹45', prev:'₹50', chg:'dn', sub:'Quick-Com Only' },
+  { rank:10, name:'Haldirams Aloo Bhujia 400g', cat:'both', platform:'Zepto', price:'₹80', prev:'₹90', chg:'dn', sub:'Cross-Listed' },
+];
+
+// Render beep cards
+const bc = document.getElementById('beeps-container');
+beepsData.forEach(b => {
+  const typeClass = b.cat === 'ecom' ? 'beep-ecom' : b.cat === 'qcom' ? 'beep-qcom' : 'beep-both';
+  const typeLabel = b.cat === 'ecom' ? 'E-Com Only' : b.cat === 'qcom' ? 'QC Only' : 'Cross-Listed';
+  bc.innerHTML += `
+  <div class="beep-card">
+    <div class="beep-rank ${b.rank <= 3 ? 'top3' : ''}">#${b.rank}</div>
+    <div class="beep-info">
+      <div class="beep-name">${b.name}</div>
+      <div class="beep-sub">${b.platform}</div>
+      <span class="beep-type ${typeClass}">${typeLabel}</span>
+    </div>
+    <div class="beep-price">
+      <div class="beep-best">${b.price}</div>
+      <div class="beep-platform" style="color:#10b981;">▼ was ${b.prev}</div>
+    </div>
+  </div>`;
+});
+
+// Render ticker (REQ 1) — duplicate for seamless scroll
+const tickerData = beepsData;
+const ti = document.getElementById('ticker-inner');
+let tickerHtml = '';
+for(let pass = 0; pass < 2; pass++) {
+  tickerData.forEach(b => {
+    const chgIcon = b.chg === 'dn' ? '▼' : '▲';
+    const chgClass = b.chg === 'dn' ? 'dn' : 'up';
+    tickerHtml += `<div class="ticker-item">
+      <span class="t-rank">#${b.rank}</span>
+      <span class="t-name">${b.name}</span>
+      <span class="t-price">${b.price}</span>
+      <span class="t-chg ${chgClass}">${chgIcon} ${b.prev}</span>
+    </div>`;
+  });
+}
+ti.innerHTML = tickerHtml;
+
+/* ═══ VIEW MODE SWITCHER ═══ */
+const viewHints = {
+  rate: 'Showing price comparison across platforms',
+  time: 'Showing delivery time comparison across platforms',
+  both: 'Showing full Rate + Time comparison — equivalent to Category C layout'
+};
+function switchView(cat, mode) {
+  ['rate','time','both'].forEach(m => {
+    const el = document.getElementById(cat + '-' + m);
+    if (el) el.classList.toggle('hidden', m !== mode);
+  });
+  const hint = document.getElementById('hint-' + cat);
+  if (hint) hint.textContent = viewHints[mode] || '';
+}
+
+/* ═══ SCROLL-SPY SIDEBAR ═══ */
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const active = document.querySelector(`.nav-item[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-10% 0px -75% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
