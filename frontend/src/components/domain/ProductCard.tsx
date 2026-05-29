@@ -8,6 +8,7 @@ import { formatPrice, formatETA, calcSavingsPercent } from "@/lib/utils";
 import type { Product, Listing } from "@/types";
 import { useBasketStore } from "@/store";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 
 // Lazy load Recharts — avoids ~80KB blocking the initial JS bundle
@@ -118,10 +119,12 @@ export const ProductCard = memo(function ProductCard({ product, index }: Product
     >
       {/* Product Image Section */}
       <div className="relative h-40 w-full bg-zinc-900 overflow-hidden border-b border-zinc-900/60 shrink-0">
-        <img 
+        <Image 
           src={imageUrl} 
-          alt="" 
-          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out text-transparent"
+          alt={product.name}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/30 to-transparent pointer-events-none" />
         

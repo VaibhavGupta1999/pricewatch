@@ -19,6 +19,7 @@ import { formatPrice, timeAgo } from "@/lib/utils";
 import { PlatformBadge } from "@/components/shared/Badges";
 import { useToast } from "@/components/shared/ToastProvider";
 import Link from "next/link";
+import Image from "next/image";
 import type { Product } from "@/types";
 
 export default function WatchlistPage() {
@@ -104,11 +105,13 @@ export default function WatchlistPage() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       className="p-3 rounded-xl border border-zinc-900 bg-zinc-950/40 backdrop-blur-md flex items-center gap-4 group hover:border-zinc-800 transition-colors"
                     >
-                      <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
-                        <img 
+                      <div className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
+                        <Image 
                           src={product.image_url} 
                           alt={product.name}
-                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                          fill
+                          sizes="56px"
+                          className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                         />
                       </div>
                       
