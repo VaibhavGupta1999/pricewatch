@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Standalone output for Vercel edge optimization
-  output: "standalone",
-
   // Enable React strict mode for catching issues early
   reactStrictMode: true,
 
